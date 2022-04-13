@@ -39,9 +39,7 @@ if __name__ == "__main__":
 	display_monitor = 1
 	monitor = QDesktopWidget().screenGeometry(display_monitor)
 	application.move(monitor.left(), monitor.top())
-	application.showFullScreen()
-
-	# application.show()
+	application.show()
 
 	sys.exit(app.exec())
 
