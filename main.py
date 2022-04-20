@@ -177,7 +177,11 @@ class ScreenShower(QMainWindow):
 		if not self.screen1.isShowing:
 			self.open_window()
 			self.screen1.isShowing = True
+		
 		self.screen1.ui.label.setText(active_text)
+
+		# font = QtGui.QFont()
+		
 
 
 	def open_window(self):
