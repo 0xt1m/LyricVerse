@@ -14,23 +14,27 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_OtherWindow(object):
     def setupUi(self, OtherWindow):
         OtherWindow.setObjectName("OtherWindow")
-        OtherWindow.resize(800, 600)
+        OtherWindow.resize(881, 718)
+        OtherWindow.setStyleSheet("color: black;\n"
+"background-color: white;")
         self.centralwidget = QtWidgets.QWidget(OtherWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(180, 150, 541, 281))
+        self.label.setGeometry(QtCore.QRect(110, 130, 641, 401))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(100)
+        font.setPointSize(28)
         self.label.setFont(font)
+        self.label.setMouseTracking(True)
+        self.label.setStyleSheet("text-align: center;")
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
         OtherWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(OtherWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 18))
-        self.menubar.setObjectName("menubar")
-        OtherWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(OtherWindow)
-        self.statusbar.setObjectName("statusbar")
-        OtherWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(OtherWindow)
         QtCore.QMetaObject.connectSlotsByName(OtherWindow)
@@ -38,8 +42,10 @@ class Ui_OtherWindow(object):
     def retranslateUi(self, OtherWindow):
         _translate = QtCore.QCoreApplication.translate
         OtherWindow.setWindowTitle(_translate("OtherWindow", "MainWindow"))
-        self.label.setText(_translate("OtherWindow", "Slide\n"
-"window"))
+        self.label.setText(_translate("OtherWindow", "Єрусалим, тебе кохаю,\n"
+"В тобі панує вічна любов.\n"
+"Усі народи в тобі зійдуться,\n"
+"Прославлять Спаса за Його Кров."))
 
 
 if __name__ == "__main__":
