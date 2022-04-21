@@ -90,6 +90,10 @@ class ScreenShower(QMainWindow):
 			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
 
 	
+	def closeEvent(self, event):
+		self.close_window()
+
+
 	def searchSong(self):
 		def checkIn(text1, text2):
 			def makeUniversalText(text):
