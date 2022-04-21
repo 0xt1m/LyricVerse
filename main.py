@@ -185,8 +185,8 @@ class ScreenShower(QMainWindow):
 		f = QFont("Arial", int(config["screen_1"]["font_size"]))
 		self.screen1.ui.label.setFont(f)
 		self.screen1.ui.label.setText(active_text)
-		self.screen1.ui.label.adjustSize()
 		self.screen1.ui.label.setWordWrap(True)
+		self.screen1.ui.label.adjustSize()
 		
 		screen1_size = QDesktopWidget().availableGeometry(1)
 		text_size = self.screen1.ui.label.size()
@@ -198,6 +198,7 @@ class ScreenShower(QMainWindow):
 			nf = QFont("Arial", font_size)
 			self.screen1.ui.label.setFont(nf)
 			self.screen1.ui.label.setText(active_text)
+			self.screen1.ui.label.setWordWrap(True)
 			self.screen1.ui.label.adjustSize()
 
 			screen1_size = QDesktopWidget().availableGeometry(1)
