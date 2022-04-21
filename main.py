@@ -249,6 +249,7 @@ class ScreenShower(QMainWindow):
 		except:
 			pass
 
+
 		# m = self.count_of_monitors - 1
 		# i = 0
 		# while m >= 0:
