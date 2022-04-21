@@ -186,6 +186,7 @@ class ScreenShower(QMainWindow):
 		self.screen1.ui.label.setFont(f)
 		self.screen1.ui.label.setText(active_text)
 		self.screen1.ui.label.adjustSize()
+		self.screen1.ui.label.setWordWrap(True)
 		
 		screen1_size = QDesktopWidget().availableGeometry(1)
 		text_size = self.screen1.ui.label.size()
