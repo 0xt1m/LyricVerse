@@ -4,7 +4,7 @@ from other_window import Ui_OtherWindow
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut
-from PyQt5.QtGui import QTransform, QKeySequence
+from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
 
 from configparser import ConfigParser
 
@@ -73,10 +73,10 @@ class ScreenShower(QMainWindow):
 		self.ui.v_slider.valueChanged.connect(self.moveElement)
 		self.ui.fz_slider.valueChanged.connect(self.setFZ)
 		self.ui.search_input.textChanged.connect(self.searchSong)
-		self.ui.list_songs.itemPressed.connect(self.getWords)
+		# self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
 		self.ui.list_words.itemPressed.connect(self.showWords)
-		self.ui.list_words.itemSelectionChanged.connect(self.showWords)
+		# self.ui.list_words.itemSelectionChanged.connect(self.showWords)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.close_window)
 		
@@ -178,10 +178,36 @@ class ScreenShower(QMainWindow):
 			self.open_window()
 			self.screen1.isShowing = True
 		
-		self.screen1.ui.label.setText(active_text)
 
-		# font = QtGui.QFont()
+		config = ConfigParser()
+		config.read("screens_config.ini")
 		
+		f = QFont("Arial", int(config["screen_1"]["font_size"]))
+		self.screen1.ui.label.setFont(f)
+		self.screen1.ui.label.setText(active_text)
+		self.screen1.ui.label.adjustSize()
+		
+		screen1_size = QDesktopWidget().availableGeometry(1)
+		text_size = self.screen1.ui.label.size()
+
+		font_size = int(config["screen_1"]["font_size"])
+		
+		while text_size.width() > screen1_size.width() - 10 or text_size.height() > screen1_size.height() - 10:
+			font_size -= 1
+			nf = QFont("Arial", font_size)
+			self.screen1.ui.label.setFont(nf)
+			self.screen1.ui.label.setText(active_text)
+			self.screen1.ui.label.adjustSize()
+
+			screen1_size = QDesktopWidget().availableGeometry(1)
+			text_size = self.screen1.ui.label.size()
+
+		screen1_center_x = screen1_size.width() / 2
+		screen1_center_y = screen1_size.height() / 2
+		text_center_x = text_size.width() / 2
+		text_center_y = text_size.height() / 2
+
+		self.screen1.ui.label.move(screen1_center_x - text_center_x, screen1_center_y - text_center_y)
 
 
 	def open_window(self):
@@ -202,13 +228,13 @@ class ScreenShower(QMainWindow):
 		self.screen1.setStyleSheet(f"""
 				background-color: {config["screen_1"]["background_color"]};
 				color: {config["screen_1"]["text_color"]};
-				font-size: {config["screen_1"]["font_size"]}px;
 			""")
 
 		screen1_geometry = QDesktopWidget().availableGeometry(1)
 		monitor = QDesktopWidget().screenGeometry(1)
 		# print(monitor.left())
 		self.screen1.ui.label.setGeometry(0, 0, screen1_geometry.width(), screen1_geometry.height())
+		
 		# self.screen1.setWindowFlags(Qt.FramelessWindowHint)
 		self.screen1.move(monitor.left(), monitor.top())
 		self.screen1.showFullScreen()
