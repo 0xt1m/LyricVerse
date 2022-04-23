@@ -138,8 +138,9 @@ class ScreenShower(QMainWindow):
 		self.init_ui()
 
 	def init_ui(self):
-		self.ui.btn_showWindow.clicked.connect(self.open_window)
-		self.ui.btn_closeWindow.clicked.connect(self.close_window)
+		self.setFixedSize(648, 549)
+		# self.ui.btn_showWindow.clicked.connect(self.open_window)
+		# self.ui.btn_closeWindow.clicked.connect(self.close_window)
 		self.ui.search_input.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showWords)
@@ -166,6 +167,8 @@ class ScreenShower(QMainWindow):
 			self.ui.screensCB.addItem(str(i))
 
 		self.anyStreamMode = False
+		self.set_settings_for_screen()
+		self.open_window()
 
 	def closeEvent(self, event):
 		self.close_window()
@@ -232,7 +235,7 @@ class ScreenShower(QMainWindow):
 			self.song_list_parts.append(i)
 			if song_chour != "":
 				self.song_list_parts.append(song_chour)
-			
+		
 		if self.anyStreamMode:
 			for part in range(len(self.song_list_parts)):
 				for line in self.song_list_parts[part].split("\n"):
@@ -252,21 +255,6 @@ class ScreenShower(QMainWindow):
 		except:
 			self.open_window()
 
-		# def rmCount(text):
-			# res = ""
-			# text_l = text.split("\n")
-			# for i in range(len(text_l)):
-			# 	try:
-			# 		part = text_l[i].lower()
-			# 		if "куплет" in part or "куплет:" in part or "приспів" in part or "приспів:" in part:
-			# 			text_l.pop(i)
-			# 	except:
-			# 		pass
-			# for i in text_l:
-			# 	res += i + "\n"
-
-			# return res
-
 		config = ConfigParser()
 		config.read("screens_config.ini")
 
@@ -276,17 +264,25 @@ class ScreenShower(QMainWindow):
 				self.screens[s].label
 			except:
 				continue
+			if self.screens[s].isShowing == False:
+				self.open_window()
 			if self.anyStreamMode:
-				partIndex = int(self.song_list_lines[self.ui.list_words.currentRow()].split().pop())
-				if config.get(f"screen_{s}", "stream_mode") == "1":
-					line = self.ui.list_words.currentItem().text()
-					self.screens[s].label.setText(line)
-				else:
-					part = self.song_list_parts[partIndex]
-					self.screens[s].label.setText(part)
+				try:
+					partIndex = int(self.song_list_lines[self.ui.list_words.currentRow()].split().pop())
+					if config.get(f"screen_{s}", "stream_mode") == "1":
+						line = self.ui.list_words.currentItem().text()
+						self.screens[s].label.setText(line)
+					else:
+						part = self.song_list_parts[partIndex]
+						self.screens[s].label.setText(part)
+				except:
+					pass
 			else:
-				part = self.ui.list_words.currentItem().text()
-				self.screens[s].label.setText(part)
+				try:
+					part = self.ui.list_words.currentItem().text()
+					self.screens[s].label.setText(part)
+				except:
+					pass
 
 			
 			active_text = self.screens[s].label.text()
@@ -315,40 +311,6 @@ class ScreenShower(QMainWindow):
 			text_center_y = text_size.height() / 2
 
 			self.screens[s].label.move(screen_center_x - text_center_x, screen_center_y - text_center_y)
-
-
-		# self.line_counter += 1
-		# if self.line_counter >= len(self.song_list_parts[part]):
-		# 	self.line_counter = 0
-
-
-		# active_text = rmCount(self.ui.list_words.currentItem().text())
-		# if not self.screen1.isShowing:
-		# 	self.open_window()
-		# 	self.screen1.isShowing = True
-		
-		# screen1_size = QDesktopWidget().availableGeometry(1)
-		# text_size = self.screen1.ui.label.size()
-
-		# font_size = int(config["screen_1"]["font_size"])
-		
-		# while text_size.width() > screen1_size.width() - 10 or text_size.height() > screen1_size.height() - 10:
-		# 	font_size -= 1
-		# 	nf = QFont("Arial", font_size)
-		# 	self.screen1.ui.label.setFont(nf)
-		# 	self.screen1.ui.label.setText(active_text.strip())
-		# 	self.screen1.ui.label.setWordWrap(True)
-		# 	self.screen1.ui.label.adjustSize()
-
-		# 	screen1_size = QDesktopWidget().availableGeometry(1)
-		# 	text_size = self.screen1.ui.label.size()
-
-		# screen1_center_x = screen1_size.width() / 2
-		# screen1_center_y = screen1_size.height() / 2
-		# text_center_x = text_size.width() / 2
-		# text_center_y = text_size.height() / 2
-
-		# self.screen1.ui.label.move(screen1_center_x - text_center_x, screen1_center_y - text_center_y)
 
 
 	def open_window(self):
@@ -447,25 +409,26 @@ class ScreenShower(QMainWindow):
 		config.read("screens_config.ini")
 
 		show_words = bool(int(config.get(f"screen_{screen_number}", "show_words")))
-		stream_mode = bool(int(config.get(f"screen_{screen_number}", "stream_mode")))
 
 		if show_words:
 			self.open_window()
 		else:
 			self.close_window()
 
-		if stream_mode:
-			self.anyStreamMode = True
-		else:
-			self.anyStreamMode = False
+		
+		def check_stream_mode():
+			count_of_screens = QDesktopWidget().screenCount()
+			for s in range(count_of_screens):
+				if config.get(f"screen_{s}", "stream_mode") == "1":
+					return True
+			return False
+
+		self.anyStreamMode = check_stream_mode()
 
 		try:
 			self.getWords()
-		except:
+		except AttributeError:
 			pass
-
-
-
 
 
 	def moveElement(self):

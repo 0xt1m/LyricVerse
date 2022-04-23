@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>648</width>
-    <height>647</height>
+    <height>511</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,37 +20,6 @@
    <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="btn_showWindow">
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>440</y>
-      <width>121</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>show window</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_closeWindow">
-    <property name="geometry">
-     <rect>
-      <x>510</x>
-      <y>470</y>
-      <width>121</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Close window</string>
-    </property>
-   </widget>
    <widget class="QListWidget" name="list_songs">
     <property name="geometry">
      <rect>
@@ -69,6 +38,9 @@
       <width>391</width>
       <height>411</height>
      </rect>
+    </property>
+    <property name="uniformItemSizes">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QLineEdit" name="search_input">
@@ -115,8 +87,8 @@
    <widget class="QCheckBox" name="checkbox_stream_mode">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>480</y>
+      <x>310</x>
+      <y>460</y>
       <width>101</width>
       <height>17</height>
      </rect>
@@ -151,8 +123,8 @@
    <widget class="QPushButton" name="btn_set">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>500</y>
+      <x>420</x>
+      <y>460</y>
       <width>101</width>
       <height>23</height>
      </rect>
