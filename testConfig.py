@@ -1,14 +1,14 @@
-from configparser import ConfigParser
+# from configparser import ConfigParser
 
-config = ConfigParser()
-config.read("screens_config.ini")
+# config = ConfigParser()
+# config.read("screens_config.ini")
 
 
-config.remove_section("screen_3")
+# config.remove_section("screen_3")
 
-# config.set("screen_1", "font_size", "120")
-with open('screens_config.ini', 'w') as configfile:
-	config.write(configfile)
+# # config.set("screen_1", "font_size", "120")
+# with open('screens_config.ini', 'w') as configfile:
+# 	config.write(configfile)
 
 # print(config["screen_1"]["font_size"])
 
@@ -23,3 +23,9 @@ with open('screens_config.ini', 'w') as configfile:
 # 	config.write(configfile)
 
 # print(config.get("screen_3", "font_size"))
+
+
+s = "bla one two"
+s = s.split()[1:]
+s = " ".join(s)
+print(s)
