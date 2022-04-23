@@ -45,10 +45,7 @@ background-color: white;</string>
      <string notr="true">text-align: center;</string>
     </property>
     <property name="text">
-     <string>Єрусалим, тебе кохаю,
-В тобі панує вічна любов.
-Усі народи в тобі зійдуться,
-Прославлять Спаса за Його Кров.</string>
+     <string/>
     </property>
     <property name="textFormat">
      <enum>Qt::AutoText</enum>

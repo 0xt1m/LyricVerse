@@ -2,24 +2,30 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1110</width>
-    <height>544</height>
+    <width>648</width>
+    <height>647</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ScreenShower</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="btn_showWindow">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>110</y>
-      <width>101</width>
+      <x>510</x>
+      <y>440</y>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -32,84 +38,17 @@
      <string>show window</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="aScreens_cb">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>120</y>
-      <width>151</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>80</y>
-      <width>161</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Avaliable screens:</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_showText">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>20</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>show text</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btn_closeWindow">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>140</y>
-      <width>101</width>
+      <x>510</x>
+      <y>470</y>
+      <width>121</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>Close window</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_up">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>50</y>
-      <width>21</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>	↑</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_down">
-    <property name="geometry">
-     <rect>
-      <x>600</x>
-      <y>50</y>
-      <width>21</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>↓</string>
     </property>
    </widget>
    <widget class="QListWidget" name="list_songs">
@@ -122,139 +61,14 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>910</x>
-      <y>70</y>
-      <width>121</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>slide preview</string>
-    </property>
-   </widget>
-   <widget class="QFrame" name="block">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>210</y>
-      <width>480</width>
-      <height>270</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background: pink;</string>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QLabel" name="label_move">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>481</width>
-       <height>271</height>
-      </rect>
-     </property>
-     <property name="acceptDrops">
-      <bool>true</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>TextLabel</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </widget>
    <widget class="QListWidget" name="list_words">
     <property name="geometry">
      <rect>
       <x>240</x>
       <y>20</y>
-      <width>321</width>
+      <width>391</width>
       <height>411</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QSlider" name="h_slider">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>490</y>
-      <width>481</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>480</number>
-    </property>
-    <property name="value">
-     <number>224</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="v_slider">
-    <property name="geometry">
-     <rect>
-      <x>1080</x>
-      <y>210</y>
-      <width>20</width>
-      <height>271</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="maximum">
-     <number>270</number>
-    </property>
-    <property name="value">
-     <number>237</number>
-    </property>
-    <property name="invertedAppearance">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QSlider" name="fz_slider">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>180</y>
-      <width>481</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>4</number>
-    </property>
-    <property name="value">
-     <number>8</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
     </property>
    </widget>
    <widget class="QLineEdit" name="search_input">
@@ -265,6 +79,86 @@
       <width>221</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="placeholderText">
+     <string>Пошук...</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="screensCB">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>460</y>
+      <width>181</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>440</y>
+      <width>141</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Availabel screens:</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkbox_stream_mode">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>480</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Stream mode</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkbox_show_words">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>460</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Show words</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_set">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>500</y>
+      <width>101</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>set</string>
     </property>
    </widget>
   </widget>
