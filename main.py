@@ -76,6 +76,7 @@ class WordsWindow(QMainWindow):
 
 			self.label = QtWidgets.QLabel(self)
 			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size")))
+			f.setBold(True)
 			self.label.setFont(f)
 			self.label.setText("")
 			self.label.setWordWrap(True)
@@ -111,13 +112,14 @@ class WordsWindowStream(QMainWindow):
 			""")
 
 			self.label = QtWidgets.QLabel(self)
+			self.label.setGeometry(QtCore.QRect(80, 480, 651, 61))
 			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size")))
+			f.setBold(True)
 			self.label.setFont(f)
 			self.label.setText("")
-			self.label.setWordWrap(True)
-			self.label.adjustSize()
 			self.label.setTextFormat(QtCore.Qt.AutoText)
 			self.label.setAlignment(QtCore.Qt.AlignCenter)
+			self.label.setScaledContents(True)
 
 			self.quitSc = QShortcut(QKeySequence('Esc'), self)
 			self.quitSc.activated.connect(ScreenShower.hide_text)
@@ -271,35 +273,42 @@ class ScreenShower(QMainWindow):
 					partIndex = int(self.song_list_lines[self.ui.list_words.currentRow()].split().pop())
 					if config.get(f"screen_{s}", "stream_mode") == "1":
 						line = self.ui.list_words.currentItem().text()
-						self.screens[s].label.setText(line)
+						if config.get(f"screen_{s}", "show_words") == "1":
+							self.screens[s].label.setText(line)
 					else:
 						part = self.song_list_parts[partIndex]
-						self.screens[s].label.setText(part)
+						if config.get(f"screen_{s}", "show_words") == "1":
+							self.screens[s].label.setText(part)
 				except:
 					pass
 			else:
 				try:
 					part = self.ui.list_words.currentItem().text()
-					self.screens[s].label.setText(part)
+					if config.get(f"screen_{s}", "show_words") == "1":
+						self.screens[s].label.setText(part)
 				except:
 					pass
 
-			
 			active_text = self.screens[s].label.text()
 
 			self.screens[s].label.adjustSize()
+			# self.screens[s].label.setScaledContents(True)
 
 			screen_size = QDesktopWidget().availableGeometry(s)
 			text_size = self.screens[s].label.size()
 
 			font_size = int(config.get(f"screen_{s}", "font_size"))
 			
+
 			while text_size.width() > screen_size.width() - 10 or text_size.height() > screen_size.height() - 10:
 				font_size -= 1
 				nf = QFont("Arial", font_size)
+				nf.setBold(True)
 				self.screens[s].label.setFont(nf)
-				self.screens[s].label.setText(active_text.strip())
-				self.screens[s].label.setWordWrap(True)
+				if config.get(f"screen_{s}", "show_words") == "1":
+					self.screens[s].label.setText(active_text.strip())
+				if config.get(f"screen_{s}", "stream_mode") == "0":
+					self.screens[s].label.setWordWrap(True)
 				self.screens[s].label.adjustSize()
 
 				screen_size = QDesktopWidget().availableGeometry(s)
@@ -310,7 +319,13 @@ class ScreenShower(QMainWindow):
 			text_center_x = text_size.width() / 2
 			text_center_y = text_size.height() / 2
 
-			self.screens[s].label.move(screen_center_x - text_center_x, screen_center_y - text_center_y)
+			if config.get(f"screen_{s}", "stream_mode") == "0":
+				self.screens[s].label.move(screen_center_x - text_center_x, screen_center_y - text_center_y)
+			
+			if config.get(f"screen_{s}", "stream_mode") == "1":
+				self.screens[s].label.move(screen_center_x - text_center_x, screen_size.height() - int(config.get(f"screen_{s}", "margin_bottom")))
+
+			# self.screens[s].label.setScaledContents(True)
 
 
 	def open_window(self):
@@ -413,7 +428,7 @@ class ScreenShower(QMainWindow):
 		if show_words:
 			self.open_window()
 		else:
-			self.close_window()
+			self.hide_text()
 
 		
 		def check_stream_mode():
