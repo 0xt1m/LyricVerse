@@ -3,7 +3,7 @@ from design import Ui_MainWindow
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect
 from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
 
 from configparser import ConfigParser
@@ -110,19 +110,37 @@ class WordsWindowStream(QMainWindow):
 		self.isShowing = False
 		if config.get(f"screen_{self.screen_number}", "show_words") == "1":
 			self.setObjectName("WordsWindowStream")
-			styles = """
-			#WordsWindowStream {
-				background: %s;
-			} 
-			""" % (config[f'screen_{self.screen_number}']['background'])
+			# styles = """
+			# #WordsWindowStream {
+			# 	background: %s;
+			# } 
+			# """ % (config[f'screen_{self.screen_number}']['background'])
+			styles = "#WordsWindowStream {background-color: rgb(0,255,0)}"
 			self.setStyleSheet(styles)
 
 			self.label = QtWidgets.QLabel(self)
 			self.label.setGeometry(QtCore.QRect(80, 480, 651, 61))
 			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size")))
 			f.setBold(True)
-			self.label.setStyleSheet(f"color: {config[f'screen_{self.screen_number}']['text_color']}")
 			self.label.setFont(f)
+			
+			if config.get(f"screen_{self.screen_number}", "shadow") == "1":
+				shadow = QGraphicsDropShadowEffect()
+				try: 
+					shadow.setBlurRadius(config.get(f"screen_{self.screen_number}", "shadow_blur_radius"))
+				except:
+					shadow.setBlurRadius(15)
+				try:
+					x = int(config.get(f"screen_{self.screen_number}", "shadow_offset").split()[0])
+					y = int(config.get(f"screen_{self.screen_number}", "shadow_offset").split()[1])
+					shadow.setOffset(x, y)
+				except:
+					pass
+				self.label.setGraphicsEffect(shadow)
+			
+			self.label.setStyleSheet(f"""
+				color: {config[f'screen_{self.screen_number}']['text_color']};\n
+			""")
 			self.label.setText("")
 			self.label.setTextFormat(QtCore.Qt.AutoText)
 			self.label.setAlignment(QtCore.Qt.AlignCenter)
@@ -184,6 +202,10 @@ class ScreenShower(QMainWindow):
 
 
 	def searchSong(self):
+		try:
+			self.ui.list_songs.setCurrentRow(0)
+		except:
+			pass
 		def checkIn(text1, text2):
 			def makeUniversalText(text):
 				text = text.lower()
@@ -216,8 +238,6 @@ class ScreenShower(QMainWindow):
 				if checkIn(song[2], req):
 					res.append(song)
 		
-		
-
 		self.ui.list_songs.clear()
 		for i in res:
 			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
@@ -457,6 +477,19 @@ class ScreenShower(QMainWindow):
 
 		self.open_window()
 
+
+	def change_config(self, key_one, key_two, value):
+		config = ConfigParser()
+		config.read("screens_config.ini")
+		try:
+			config.add_section(key_one)
+		except:
+			pass
+		config.set(key_one, key_two, value)
+
+		with open('screens_config.ini', 'w') as configfile:
+			config.write(configfile)
+	
 
 	def moveElement(self):
 		self.ui.label_move.move(self.ui.h_slider.value(), self.ui.v_slider.value())

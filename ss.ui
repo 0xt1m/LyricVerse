@@ -80,6 +80,9 @@
       <pointsize>10</pointsize>
      </font>
     </property>
+    <property name="styleSheet">
+     <string notr="true">text-shadow: red 2px 5px;</string>
+    </property>
     <property name="text">
      <string>Availabel screens:</string>
     </property>
