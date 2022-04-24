@@ -63,20 +63,23 @@ class WordsWindow(QMainWindow):
 		self.screen_number = screen_number
 		self.init_ui()
 
-	def init_ui(self):
+	def init_ui(self, ):
 		config = ConfigParser()
 		config.read("screens_config.ini")
 		
 		self.isShowing = False
 		if config.get(f"screen_{self.screen_number}", "show_words") == "1":
-			self.setStyleSheet(f"""
-				background-color: {config[f"screen_{self.screen_number}"]["background_color"]};
-				color: {config[f"screen_{self.screen_number}"]["text_color"]};
-			""")
+			self.setObjectName("WordsWindow")
+			styles = """#WordsWindow {
+				background: %s;
+			} 
+			""" % (config[f'screen_{self.screen_number}']['background'])
+			self.setStyleSheet(styles)
 
 			self.label = QtWidgets.QLabel(self)
 			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size")))
 			f.setBold(True)
+			self.label.setStyleSheet(f"color: {config[f'screen_{self.screen_number}']['text_color']}")
 			self.label.setFont(f)
 			self.label.setText("")
 			self.label.setWordWrap(True)
@@ -106,15 +109,19 @@ class WordsWindowStream(QMainWindow):
 		
 		self.isShowing = False
 		if config.get(f"screen_{self.screen_number}", "show_words") == "1":
-			self.setStyleSheet(f"""
-				background-color: {config[f"screen_{self.screen_number}"]["background_color"]};
-				color: {config[f"screen_{self.screen_number}"]["text_color"]};
-			""")
+			self.setObjectName("WordsWindowStream")
+			styles = """
+			#WordsWindowStream {
+				background: %s;
+			} 
+			""" % (config[f'screen_{self.screen_number}']['background'])
+			self.setStyleSheet(styles)
 
 			self.label = QtWidgets.QLabel(self)
 			self.label.setGeometry(QtCore.QRect(80, 480, 651, 61))
 			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size")))
 			f.setBold(True)
+			self.label.setStyleSheet(f"color: {config[f'screen_{self.screen_number}']['text_color']}")
 			self.label.setFont(f)
 			self.label.setText("")
 			self.label.setTextFormat(QtCore.Qt.AutoText)
@@ -140,7 +147,7 @@ class ScreenShower(QMainWindow):
 		self.init_ui()
 
 	def init_ui(self):
-		self.setFixedSize(648, 549)
+		self.setFixedSize(648, 511)
 		# self.ui.btn_showWindow.clicked.connect(self.open_window)
 		# self.ui.btn_closeWindow.clicked.connect(self.close_window)
 		self.ui.search_input.textChanged.connect(self.searchSong)
@@ -266,6 +273,12 @@ class ScreenShower(QMainWindow):
 				self.screens[s].label
 			except:
 				continue
+			
+			font_size = int(config.get(f"screen_{s}", "font_size"))
+			f = QFont("Arial", font_size)
+			f.setBold(True)
+			self.screens[s].label.setFont(f)
+
 			if self.screens[s].isShowing == False:
 				self.open_window()
 			if self.anyStreamMode:
@@ -296,10 +309,7 @@ class ScreenShower(QMainWindow):
 
 			screen_size = QDesktopWidget().availableGeometry(s)
 			text_size = self.screens[s].label.size()
-
-			font_size = int(config.get(f"screen_{s}", "font_size"))
 			
-
 			while text_size.width() > screen_size.width() - 10 or text_size.height() > screen_size.height() - 10:
 				font_size -= 1
 				nf = QFont("Arial", font_size)
@@ -444,6 +454,8 @@ class ScreenShower(QMainWindow):
 			self.getWords()
 		except AttributeError:
 			pass
+
+		self.open_window()
 
 
 	def moveElement(self):
