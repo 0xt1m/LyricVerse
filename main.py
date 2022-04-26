@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWid
 from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
 
 from configparser import ConfigParser
+from mybible_handler import Mybible
 
 import sqlite3
 
@@ -165,17 +166,17 @@ class ScreenShower(QMainWindow):
 		self.init_ui()
 
 	def init_ui(self):
-		self.setFixedSize(648, 511)
+		self.setFixedSize(650, 520)
 		# self.ui.btn_showWindow.clicked.connect(self.open_window)
 		# self.ui.btn_closeWindow.clicked.connect(self.close_window)
-		self.ui.search_input.textChanged.connect(self.searchSong)
+		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showWords)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
 		self.ui.screensCB.currentTextChanged.connect(self.set_settings_from_screen)
-		self.ui.btn_set.clicked.connect(self.change_settings_for_screen)
-		self.ui.btn_set.clicked.connect(self.set_settings_for_screen)
+		self.ui.btn_save.clicked.connect(self.change_settings_for_screen)
+		self.ui.btn_save.clicked.connect(self.set_settings_for_screen)
 
 		self.ui.list_words.setSpacing(5)
 
@@ -229,7 +230,7 @@ class ScreenShower(QMainWindow):
 		songs = sql.execute("SELECT * FROM Songs").fetchall()
 		res = []
 		
-		req = self.ui.search_input.text()
+		req = self.ui.song_search.text()
 		if req.isdigit():
 			req = int(req)
 			res = sql.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()

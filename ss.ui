@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
-    <height>511</height>
+    <width>650</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,59 +20,13 @@
    <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QListWidget" name="list_songs">
+   <widget class="QTabWidget" name="tabs">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>221</width>
-      <height>391</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="list_words">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>20</y>
-      <width>391</width>
-      <height>411</height>
-     </rect>
-    </property>
-    <property name="uniformItemSizes">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="search_input">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>221</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="placeholderText">
-     <string>Пошук...</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="screensCB">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>460</y>
-      <width>181</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>440</y>
-      <width>141</width>
-      <height>16</height>
+      <x>0</x>
+      <y>0</y>
+      <width>650</width>
+      <height>520</height>
      </rect>
     </property>
     <property name="font">
@@ -81,60 +35,344 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">text-shadow: red 2px 5px;</string>
+     <string notr="true"/>
     </property>
-    <property name="text">
-     <string>Availabel screens:</string>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
-   </widget>
-   <widget class="QCheckBox" name="checkbox_stream_mode">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>460</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Stream mode</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkbox_show_words">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>460</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Show words</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_set">
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>460</y>
-      <width>101</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>set</string>
-    </property>
+    <widget class="QWidget" name="songs">
+     <attribute name="title">
+      <string>Songs</string>
+     </attribute>
+     <widget class="QListWidget" name="list_songs">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>221</width>
+        <height>411</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="song_search">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>221</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>Пошук...</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_words">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>10</y>
+        <width>401</width>
+        <height>431</height>
+       </rect>
+      </property>
+      <property name="uniformItemSizes">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="av_songbooks">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>450</y>
+        <width>221</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>450</y>
+        <width>131</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Avaliable songbooks:</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="bible">
+     <attribute name="title">
+      <string>Bible</string>
+     </attribute>
+     <widget class="QComboBox" name="av_translates">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>445</y>
+        <width>161</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>UBIO'88</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>420</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Translates</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="bible_chapters_list">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>30</y>
+        <width>81</width>
+        <height>381</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="bible_verses_list">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>30</y>
+        <width>401</width>
+        <height>381</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="chapter_input">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>10</y>
+        <width>81</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>chapter</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="bible_books_list">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>121</width>
+        <height>381</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="verse_input">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>10</y>
+        <width>401</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>verse</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="book_input">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>121</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="placeholderText">
+       <string>book</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="quick_bible_search">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>450</y>
+        <width>121</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>мт 10 10</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>420</y>
+        <width>101</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Quick search</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>420</y>
+        <width>211</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Search in bible</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="bible_search">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>450</y>
+        <width>281</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="settings">
+     <attribute name="title">
+      <string>Settings</string>
+     </attribute>
+     <widget class="QPushButton" name="btn_save">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>440</y>
+        <width>101</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="screensCB">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>181</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkbox_stream_mode">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>90</y>
+        <width>101</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Stream mode</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>30</y>
+        <width>141</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">text-shadow: red 2px 5px;</string>
+      </property>
+      <property name="text">
+       <string>Availabel screens:</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkbox_show_words">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>90</y>
+        <width>101</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Show words</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
