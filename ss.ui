@@ -38,7 +38,7 @@
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="songs">
      <attribute name="title">
@@ -113,7 +113,7 @@
      <attribute name="title">
       <string>Bible</string>
      </attribute>
-     <widget class="QComboBox" name="av_translates">
+     <widget class="QComboBox" name="av_translations">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -122,11 +122,6 @@
         <height>22</height>
        </rect>
       </property>
-      <item>
-       <property name="text">
-        <string>UBIO'88</string>
-       </property>
-      </item>
      </widget>
      <widget class="QLabel" name="label_3">
       <property name="geometry">
@@ -143,7 +138,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Translates</string>
+       <string>Translations</string>
       </property>
      </widget>
      <widget class="QListWidget" name="bible_chapters_list">
@@ -348,7 +343,7 @@
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">text-shadow: red 2px 5px;</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string>Availabel screens:</string>

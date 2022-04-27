@@ -10,14 +10,13 @@ from configparser import ConfigParser
 from mybible_handler import Mybible
 
 import sqlite3
+import json
 
 import sys
 
-
-
 class Song:
-	def __init__(self, song_title):
-		db = sqlite3.connect("Songs.db")
+	def __init__(self, songbook, song_title):
+		db = sqlite3.connect(f"Songbooks/{songbook}")
 		self.sql = db.cursor()
 		self.song = self.sql.execute(f"SELECT * FROM Songs WHERE title='{song_title}'").fetchall()
 		self.song_text = self.song[0][2]
@@ -157,7 +156,6 @@ class WordsWindowStream(QMainWindow):
 			self.isShowing = True
 
 
-
 class ScreenShower(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -177,18 +175,33 @@ class ScreenShower(QMainWindow):
 		self.ui.screensCB.currentTextChanged.connect(self.set_settings_from_screen)
 		self.ui.btn_save.clicked.connect(self.change_settings_for_screen)
 		self.ui.btn_save.clicked.connect(self.set_settings_for_screen)
+		self.ui.av_songbooks.currentTextChanged.connect(self.get_songs_from_songbook)
+		self.ui.av_translations.currentTextChanged.connect(self.set_bible)
+		self.ui.bible_books_list.itemSelectionChanged.connect(self.get_chapters)
+		self.ui.bible_chapters_list.itemSelectionChanged.connect(self.get_verses)
+		self.ui.bible_verses_list.setWordWrap(True)
 
 		self.ui.list_words.setSpacing(5)
 
 		# self.ui.list_songs.itemPressed.connect(self.getWords)
 		# self.ui.list_words.itemPressed.connect(self.showWords)
 
-		con = sqlite3.connect("Songs.db")
-		cur = con.cursor()
-		song_names = cur.execute("SELECT id, title FROM Songs").fetchall()
+		with open("Songbooks/songbooks.json", "r") as json_file:
+			self.songbooks = json.load(json_file)
+		
+		self.songbook_names = list(self.songbooks.keys())
+		for s in self.songbook_names:
+			self.ui.av_songbooks.addItem(s)
 
-		for i in song_names:
-			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
+		self.get_songs_from_songbook()
+
+		with open("bible_translations/bible_translations.json", "r") as json_file:
+			self.bible_translations = json.load(json_file)
+	
+		self.bible_translations_names = list(self.bible_translations.keys())
+		for b in self.bible_translations_names:
+			self.ui.av_translations.addItem(b)
+		self.set_bible()
 
 		count_of_screens = QDesktopWidget().screenCount()
 		for i in range(0, count_of_screens):
@@ -198,15 +211,57 @@ class ScreenShower(QMainWindow):
 		self.set_settings_for_screen()
 		self.open_window()
 
+
+	def set_bible(self):
+		self.bible = Mybible("bible_translations/%s" % (self.bible_translations[self.ui.av_translations.currentText()]["filename"]))
+		self.ui.bible_books_list.clear()
+		try:
+			for book in self.bible.all_books:
+				self.ui.bible_books_list.addItem(book.long_name)
+		except:
+			pass
+
+	def get_chapters(self):
+		book_name = self.ui.bible_books_list.currentItem().text()
+		book_number = self.bible.book_to_number(book_name)
+		count_of_chapters = self.bible.count_of_chapters(book_number)
+		
+		self.ui.bible_chapters_list.clear()
+		for i in range(1, count_of_chapters + 1):
+			self.ui.bible_chapters_list.addItem(str(i))
+
+	def get_verses(self):
+		book_number = int(self.bible.book_to_number(self.ui.bible_books_list.currentItem().text()))
+		chapter = int(self.ui.bible_chapters_list.currentItem().text())
+		chapter_verses = self.bible.get_verses(book_number, chapter)
+		self.ui.bible_verses_list.clear()
+		counter = 1
+		for v in chapter_verses:
+			self.ui.bible_verses_list.addItem(str(counter) + ". " + v.text)
+			counter += 1
+
+
+
+
+	def get_songs_from_songbook(self):		
+		self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[self.ui.av_songbooks.currentText()]["filename"]}')
+		self.cursor = self.connection.cursor()
+		song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
+		
+		self.hide_text()
+		self.ui.list_songs.clear()
+		self.ui.list_words.clear()
+		for i in song_names:
+			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
+
+		self.searchSong()
+
+
 	def closeEvent(self, event):
 		self.close_window()
 
 
 	def searchSong(self):
-		try:
-			self.ui.list_songs.setCurrentRow(0)
-		except:
-			pass
 		def checkIn(text1, text2):
 			def makeUniversalText(text):
 				text = text.lower()
@@ -224,16 +279,13 @@ class ScreenShower(QMainWindow):
 				return True 
 			return False
 
-		db = sqlite3.connect("Songs.db")
-		sql = db.cursor()
-
-		songs = sql.execute("SELECT * FROM Songs").fetchall()
+		songs = self.cursor.execute("SELECT * FROM Songs").fetchall()
 		res = []
 		
 		req = self.ui.song_search.text()
 		if req.isdigit():
 			req = int(req)
-			res = sql.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()
+			res = self.cursor.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()
 		else:
 			for song in songs: 
 				if checkIn(song[2], req):
@@ -242,6 +294,11 @@ class ScreenShower(QMainWindow):
 		self.ui.list_songs.clear()
 		for i in res:
 			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
+
+		try:
+			self.ui.list_songs.setCurrentRow(0)
+		except:
+			pass
 
 
 	def getWords(self):
@@ -253,29 +310,31 @@ class ScreenShower(QMainWindow):
 			song_title += t + " "
 		song_title = song_title.strip()
 		
-		song = Song(song_title)
-		song_couplets = song.getCouplets()
-		song_chour = song.getChour()
+		try:
+			song = Song(self.songbooks[self.ui.av_songbooks.currentText()]["filename"], song_title)
+			song_couplets = song.getCouplets()
+			song_chour = song.getChour()
 
-		self.ui.list_words.clear()
-		
-		self.song_list_parts = []
-		self.song_list_lines = []
-		for i in song_couplets:
-			self.song_list_parts.append(i)
-			if song_chour != "":
-				self.song_list_parts.append(song_chour)
-		
-		if self.anyStreamMode:
-			for part in range(len(self.song_list_parts)):
-				for line in self.song_list_parts[part].split("\n"):
-					self.song_list_lines.append(line + " " + str(part))
+			self.ui.list_words.clear()
+			
+			self.song_list_parts = []
+			self.song_list_lines = []
+			for i in song_couplets:
+				self.song_list_parts.append(i)
+				if song_chour != "":
+					self.song_list_parts.append(song_chour)
+			
+			if self.anyStreamMode:
+				for part in range(len(self.song_list_parts)):
+					for line in self.song_list_parts[part].split("\n"):
+						self.song_list_lines.append(line + " " + str(part))
 
-			for line in self.song_list_lines:
-				self.ui.list_words.addItem(line[:-2])
-		elif not self.anyStreamMode:
-			self.ui.list_words.addItems(self.song_list_parts)
-
+				for line in self.song_list_lines:
+					self.ui.list_words.addItem(line[:-2])
+			elif not self.anyStreamMode:
+				self.ui.list_words.addItems(self.song_list_parts)
+		except:
+			pass
 		self.hide_text()
 
 

@@ -61,8 +61,12 @@ class Mybible:
 		return res
 
 	def book_to_number(self, book):
+		book = book.lower().replace("i", "і")
 		for b in self.all_books:
-			if book.lower() in b.long_name.lower().replace("i", "і") or book.lower() in b.short_name.lower().replace("i", "і"):
+			b_l = b.long_name.lower().replace("i", "і")
+			b_s = b.short_name.lower().replace("i", "і")
+			# print(book + " <><> " + b_l)
+			if book in b_l or book in b_s:
 				return b.book_number
 			if len(b.short_name.split()) == 2:
 				try_line = b.short_name.split()
@@ -76,6 +80,17 @@ class Mybible:
 			AND chapter={chapter} AND verse={verse}""").fetchall()
 		verse = Verse(verse_db[0][0], verse_db[0][1], verse_db[0][2], verse_db[0][3])
 		return verse
+
+	def get_verses(self, book_number, chapter):
+		res = []
+		verses = self.cursor.execute(f"SELECT * FROM verses WHERE book_number={book_number} AND chapter={chapter}").fetchall()
+		res = [Verse(v[0], v[1], v[2], v[3]) for v in verses]
+		return res
+
+	def count_of_chapters(self, book_number):
+		chapters = self.cursor.execute(f"SELECT chapter FROM verses WHERE book_number={book_number}").fetchall()
+		chapters = list(set(chapters))
+		return len(chapters)
 
 	def find(self, query):
 		query_s = query.split()
