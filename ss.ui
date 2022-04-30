@@ -144,9 +144,9 @@
      <widget class="QListWidget" name="bible_chapters_list">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>160</x>
         <y>30</y>
-        <width>81</width>
+        <width>51</width>
         <height>381</height>
        </rect>
       </property>
@@ -154,9 +154,9 @@
      <widget class="QListWidget" name="bible_verses_list">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>220</x>
         <y>30</y>
-        <width>401</width>
+        <width>411</width>
         <height>381</height>
        </rect>
       </property>
@@ -164,9 +164,9 @@
      <widget class="QLineEdit" name="chapter_input">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>160</x>
         <y>10</y>
-        <width>81</width>
+        <width>51</width>
         <height>20</height>
        </rect>
       </property>
@@ -179,7 +179,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>121</width>
+        <width>141</width>
         <height>381</height>
        </rect>
       </property>
@@ -187,9 +187,9 @@
      <widget class="QLineEdit" name="verse_input">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>220</x>
         <y>10</y>
-        <width>401</width>
+        <width>411</width>
         <height>20</height>
        </rect>
       </property>
@@ -202,7 +202,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>121</width>
+        <width>141</width>
         <height>20</height>
        </rect>
       </property>

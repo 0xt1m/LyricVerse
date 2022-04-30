@@ -75,6 +75,16 @@ class Mybible:
 					return b.book_number
 		return 0
 
+	def get_book_index_by_number(self, book_number):
+		for i in range(len(self.all_books)):
+			if self.all_books[i].book_number == book_number:
+				return i
+
+	def get_book_by_number(self, book_number):
+		b = self.cursor.execute(f"SELECT * FROM books WHERE book_number={book_number}").fetchall()
+		book = Book(b[0][0], b[0][1], b[0][2], b[0][3])
+		return book
+
 	def get_verse(self, book_number, chapter, verse):
 		verse_db = self.cursor.execute(f"""SELECT * FROM verses WHERE book_number={book_number}
 			AND chapter={chapter} AND verse={verse}""").fetchall()
