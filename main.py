@@ -416,7 +416,25 @@ class ScreenShower(QMainWindow):
 	
 	def search_in_bible(self):
 		reqest = self.ui.bible_search.text()
-		print(reqest)
+		try:
+			try:
+				self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+			except:
+				pass
+
+			search_res = self.bible.find_by_text(reqest)
+			self.ui.bible_books_list.setCurrentRow(self.bible.get_book_index_by_number(int(search_res.book_number)))
+			self.ui.bible_books_list.scrollToItem(self.ui.bible_books_list.currentItem())
+
+			self.ui.bible_chapters_list.setCurrentRow(int(search_res.chapter) - 1)
+			self.ui.bible_chapters_list.scrollToItem(self.ui.bible_chapters_list.currentItem())
+
+			self.ui.bible_verses_list.setCurrentRow(int(search_res.verse) - 1)
+			self.ui.bible_verses_list.scrollToItem(self.ui.bible_verses_list.currentItem())	
+
+			self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
+		except Exception as error:
+			self.hide_text()
 	
 
 	def getWords(self):
