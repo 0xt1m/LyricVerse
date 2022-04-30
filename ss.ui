@@ -38,7 +38,7 @@
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="songs">
      <attribute name="title">
@@ -106,6 +106,32 @@
       </property>
       <property name="text">
        <string>Avaliable songbooks:</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="new_song_btn">
+      <property name="geometry">
+       <rect>
+        <x>390</x>
+        <y>450</y>
+        <width>75</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>new song</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="edit_song_btn">
+      <property name="geometry">
+       <rect>
+        <x>470</x>
+        <y>450</y>
+        <width>75</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>edit song</string>
       </property>
      </widget>
     </widget>
@@ -282,6 +308,18 @@
        </font>
       </property>
      </widget>
+     <zorder>av_translations</zorder>
+     <zorder>label_3</zorder>
+     <zorder>bible_chapters_list</zorder>
+     <zorder>bible_verses_list</zorder>
+     <zorder>chapter_input</zorder>
+     <zorder>bible_books_list</zorder>
+     <zorder>book_input</zorder>
+     <zorder>quick_bible_search</zorder>
+     <zorder>label_4</zorder>
+     <zorder>label_5</zorder>
+     <zorder>bible_search</zorder>
+     <zorder>verse_input</zorder>
     </widget>
     <widget class="QWidget" name="settings">
      <attribute name="title">
@@ -290,8 +328,8 @@
      <widget class="QPushButton" name="btn_save">
       <property name="geometry">
        <rect>
-        <x>30</x>
-        <y>440</y>
+        <x>430</x>
+        <y>50</y>
         <width>101</width>
         <height>23</height>
        </rect>
@@ -313,8 +351,8 @@
      <widget class="QCheckBox" name="checkbox_stream_mode">
       <property name="geometry">
        <rect>
-        <x>120</x>
-        <y>90</y>
+        <x>320</x>
+        <y>50</y>
         <width>101</width>
         <height>17</height>
        </rect>
@@ -352,8 +390,8 @@
      <widget class="QCheckBox" name="checkbox_show_words">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>90</y>
+        <x>220</x>
+        <y>50</y>
         <width>101</width>
         <height>17</height>
        </rect>
@@ -366,6 +404,78 @@
       <property name="text">
        <string>Show words</string>
       </property>
+     </widget>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>90</y>
+        <width>601</width>
+        <height>371</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="simple_mode_settings_tab">
+       <attribute name="title">
+        <string>Simple Mode Settings</string>
+       </attribute>
+       <widget class="QLabel" name="label_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>61</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Font size</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="font_size_input">
+        <property name="geometry">
+         <rect>
+          <x>70</x>
+          <y>20</y>
+          <width>42</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_7">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>71</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Text color</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="text_color_input">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>50</y>
+          <width>71</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="placeholderText">
+         <string>black</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="stream_mode_settings_tab">
+       <attribute name="title">
+        <string>Stream Mode Settings</string>
+       </attribute>
+      </widget>
      </widget>
     </widget>
    </widget>

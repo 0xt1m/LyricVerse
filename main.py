@@ -128,7 +128,7 @@ class WordsWindowStream(QMainWindow):
 
 			self.label = QtWidgets.QLabel(self)
 			self.label.setGeometry(QtCore.QRect(80, 480, 651, 61))
-			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size")))
+			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "stream_font_size")))
 			f.setBold(True)
 			self.label.setFont(f)
 			
@@ -486,7 +486,11 @@ class ScreenShower(QMainWindow):
 		self.screens[screen_number].label.setWordWrap(True)
 		self.screens[screen_number].label.adjustSize()
 		label_size = self.screens[screen_number].label.size()
-		font_size = int(config.get(f"screen_{screen_number}", "font_size"))
+		font_size = 0
+		if config.get(f"screen_{screen_number}", "stream_mode") == "0":
+			font_size = int(config.get(f"screen_{screen_number}", "font_size"))
+		elif config.get(f"screen_{screen_number}", "stream_mode") == "1":
+			font_size = int(config.get(f"screen_{screen_number}", "stream_font_size"))
 		while label_size.width() > width or label_size.height() > height:
 			font_size -= 1
 			new_font = QFont("Arial", font_size)
@@ -508,7 +512,11 @@ class ScreenShower(QMainWindow):
 		self.screens[screen_number].label.setWordWrap(False)
 		self.screens[screen_number].label.adjustSize()
 		label_size = self.screens[screen_number].label.size()
-		font_size = int(config.get(f"screen_{screen_number}", "font_size"))
+		font_size = 0
+		if config.get(f"screen_{screen_number}", "stream_mode") == "0":
+			font_size = int(config.get(f"screen_{screen_number}", "font_size"))
+		elif config.get(f"screen_{screen_number}", "stream_mode") == "1":
+			font_size = int(config.get(f"screen_{screen_number}", "stream_font_size"))
 		while label_size.height() > height:
 			font_size -= 1
 			new_font = QFont("Arial", font_size)
@@ -551,7 +559,11 @@ class ScreenShower(QMainWindow):
 
 			screen_size = QDesktopWidget().availableGeometry(s)
 
-			font_size = int(config.get(f"screen_{s}", "font_size"))
+			font_size = 0
+			if config.get(f"screen_{s}", "stream_mode") == "0":
+				font_size = int(config.get(f"screen_{s}", "font_size"))
+			elif config.get(f"screen_{s}", "stream_mode") == "1":
+				font_size = int(config.get(f"screen_{s}", "stream_font_size"))
 			f = QFont("Arial", font_size)
 			f.setBold(True)
 			self.screens[s].label.setFont(f)
