@@ -68,6 +68,8 @@ class WordsWindow(QMainWindow):
 		config = ConfigParser()
 		config.read("screens_config.ini")
 		
+		self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
 		self.isShowing = False
 		if config.get(f"screen_{self.screen_number}", "show_words") == "1":
 			self.setObjectName("WordsWindow")
@@ -115,6 +117,8 @@ class WordsWindowStream(QMainWindow):
 	def init_ui(self):
 		config = ConfigParser()
 		config.read("screens_config.ini")
+
+		self.setWindowFlags(Qt.WindowStaysOnTopHint)
 		
 		self.isShowing = False
 		if config.get(f"screen_{self.screen_number}", "show_words") == "1":
@@ -195,10 +199,11 @@ class ScreenShower(QMainWindow):
 
 	
 	def init_ui(self):
-		self.setFixedSize(650, 520)
+		self.setFixedSize(650, 550)
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+		self.ui.list_words.itemPressed.connect(self.showSong)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
 		self.ui.screensCB.currentTextChanged.connect(self.set_settings_from_screen)
@@ -510,7 +515,7 @@ class ScreenShower(QMainWindow):
 				# Set fit font
 				self.wordWrap(s, label_width)
 				self.scaleHeight(s, label_height)
-				self.wordWrap(s, label_width)			
+				# self.wordWrap(s, label_width)			
 	
 	
 	def showBible(self):
@@ -703,6 +708,13 @@ class ScreenShower(QMainWindow):
 					self.ui.list_words.addItem(line[:-2])
 			elif not self.anyStreamMode:
 				self.ui.list_words.addItems(self.song_list_parts)
+			
+			self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+			
+			self.ui.list_words.setCurrentRow(0)
+			self.ui.list_words.scrollToItem(self.ui.list_words.currentItem())
+
+			self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 		except:
 			pass
 		self.hide_text()
