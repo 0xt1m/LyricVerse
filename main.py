@@ -650,139 +650,43 @@ class ScreenShower(QMainWindow):
 			f.setBold(True)
 			self.screens[s].label.setFont(f)
 			
-			if self.anyStreamMode:
-				try:
-					if words_type == "song":
-						partIndex = int(self.song_list_lines[self.ui.list_words.currentRow()].split().pop())
-						if config.get(f"screen_{s}", "stream_mode") == "1" and config.get(f"screen_{s}", "show_words") == "1":
-							line = self.ui.list_words.currentItem().text()
-							self.screens[s].label.setText(line)
-							self.screens[s].label.setGeometry(0, 0, screen_size.width(), 100)
-							
-							self.scaleLabelContentByHeight(s, 100)
-							label_size = self.screens[s].label.size()
-							screen_center_x = screen_size.width() / 2
-							label_center_x = label_size.width() / 2
-							margin_bottom = int(config.get(f"screen_{s}", "margin_bottom"))
-							self.screens[s].label.setGeometry(
-								screen_center_x - label_center_x, 
-								screen_size.height() - margin_bottom, 
-								label_size.width(), 
-								label_size.height()
-							)
-					
-						elif config.get(f"screen_{s}", "stream_mode") == "0" and config.get(f"screen_{s}", "show_words") == "1":
-							part = self.song_list_parts[partIndex]
-							self.screens[s].label.setText(part)
+			# try:
+			if words_type == "song":
+				part = self.ui.list_words.currentItem().text()
+				if config.get(f"screen_{s}", "show_words") == "1":
+					self.screens[s].label.setText(part)
+			elif words_type == "bible":
+				self.bible_place[2] = str(self.ui.bible_verses_list.currentRow() + 1)
+				bible_place = self.list_to_bible_place(self.bible_place)
+				if config.get(f"screen_{s}", "show_words") == "1":
+					self.screens[s].label.setText(self.ui.bible_verses_list.currentItem().text())
 
-							self.scaleLabelContent(s, screen_size.width() - 200, screen_size.height() - 200)
-							label_size = self.screens[s].label.size()
-							screen_center_x = screen_size.width() / 2
-							screen_center_y = screen_size.height() / 2
-							label_center_x = label_size.width() / 2
-							label_center_y = label_size.height() / 2
-							self.screens[s].label.setGeometry(
-								screen_center_x - label_center_x, 
-								screen_center_y - label_center_y, 
-								label_size.width(), 
-								label_size.height()
-							)
-					elif words_type == "bible":
-						self.bible_place[2] = str(self.ui.bible_verses_list.currentRow() + 1)
-						if config.get(f"screen_{s}", "stream_mode") == "1" and config.get(f"screen_{s}", "show_words") == "1":
-							self.screens[s].label.setText(self.ui.bible_verses_list.currentItem().text())
-
-							bible_position = config.get(f"screen_{s}", "bible_position").split()
-							bible_size = config.get(f"screen_{s}", "bible_size").split()
-							self.scaleLabelContent(s, int(bible_size[0]), int(bible_size[1]))
-							label_size = self.screens[s].label.size()
-							label_center_x = label_size.width() / 2
-							label_center_y = label_size.height() / 2
-							self.screens[s].label.setGeometry(
-								int(bible_position[0]) - label_center_x, 
-								int(bible_position[1]) - label_center_y, 
-								label_size.width(), 
-								label_size.height()
-							)
-							bible_place = self.list_to_bible_place(self.bible_place)
-							self.screens[s].label_info.setText(bible_place)
-							self.screens[s].label_info.adjustSize()
-
-							info_position = config.get(f"screen_{s}", "info_stream_position").split()
-							self.screens[s].label_info.move(int(info_position[0]), int(info_position[1]))
-							font_size = int(config.get(f"screen_{s}", "font_size_info"))
-							f = QFont("Arial", font_size)
-							f.setItalic(True)
-							self.screens[s].label_info.setFont(f)
-
-						elif config.get(f"screen_{s}", "stream_mode") == "0" and config.get(f"screen_{s}", "show_words") == "1":
-							self.screens[s].label.setText(self.ui.bible_verses_list.currentItem().text())
-
-							self.scaleLabelContent(s, screen_size.width() - 200, screen_size.height() - 200)
-							label_size = self.screens[s].label.size()
-							screen_center_x = screen_size.width() / 2
-							screen_center_y = screen_size.height() / 2
-							label_center_x = label_size.width() / 2
-							label_center_y = label_size.height() / 2
-							self.screens[s].label.setGeometry(
-								screen_center_x - label_center_x, 
-								screen_center_y - label_center_y, 
-								label_size.width(), 
-								label_size.height()
-							)
-
-							bible_place = self.list_to_bible_place(self.bible_place)
-							self.screens[s].label_info.setText(bible_place)
-							self.screens[s].label_info.adjustSize()
-
-							info_position = config.get(f"screen_{s}", "info_position").split()
-							self.screens[s].label_info.move(int(info_position[0]), int(info_position[1]))
-							font_size = int(config.get(f"screen_{s}", "font_size_info"))
-							f = QFont("Arial", font_size)
-							f.setItalic(True)
-							self.screens[s].label_info.setFont(f)
-						
-				except Exception as error:
-					print(error)
-			
-			elif not self.anyStreamMode:
-				# try:
-				if words_type == "song":
-					part = self.ui.list_words.currentItem().text()
-					if config.get(f"screen_{s}", "show_words") == "1":
-						self.screens[s].label.setText(part)
-				elif words_type == "bible":
-					self.bible_place[2] = str(self.ui.bible_verses_list.currentRow() + 1)
 					bible_place = self.list_to_bible_place(self.bible_place)
-					if config.get(f"screen_{s}", "show_words") == "1":
-						self.screens[s].label.setText(self.ui.bible_verses_list.currentItem().text())
+					self.screens[s].label_info.setText(bible_place)
+					self.screens[s].label_info.adjustSize()
 
-						bible_place = self.list_to_bible_place(self.bible_place)
-						self.screens[s].label_info.setText(bible_place)
-						self.screens[s].label_info.adjustSize()
+					info_position = config.get(f"screen_{s}", "info_position").split()
+					self.screens[s].label_info.move(int(info_position[0]), int(info_position[1]))
+					font_size = int(config.get(f"screen_{s}", "font_size_info"))
+					f = QFont("Arial", font_size)
+					f.setItalic(True)
+					self.screens[s].label_info.setFont(f)
 
-						info_position = config.get(f"screen_{s}", "info_position").split()
-						self.screens[s].label_info.move(int(info_position[0]), int(info_position[1]))
-						font_size = int(config.get(f"screen_{s}", "font_size_info"))
-						f = QFont("Arial", font_size)
-						f.setItalic(True)
-						self.screens[s].label_info.setFont(f)
+			
+			label_width = screen_size.width() - 300
+			label_height = screen_size.height() - 300
 
-				
-				label_width = screen_size.width() - 300
-				label_height = screen_size.height() - 300
-
-				# Set label to center
-				label_center_x = label_width / 2
-				label_center_y = label_height / 2
-				screen_center_x = screen_size.width() / 2
-				screen_center_y = screen_size.height() / 2
-				self.screens[s].label.setGeometry(screen_center_x - label_center_x, screen_center_y - label_center_y, label_width, label_height)
-				
-				# Set fit font
-				self.wordWrap(s, label_width)
-				self.scaleHeight(s, label_height)
-				self.wordWrap(s, label_width)
+			# Set label to center
+			label_center_x = label_width / 2
+			label_center_y = label_height / 2
+			screen_center_x = screen_size.width() / 2
+			screen_center_y = screen_size.height() / 2
+			self.screens[s].label.setGeometry(screen_center_x - label_center_x, screen_center_y - label_center_y, label_width, label_height)
+			
+			# Set fit font
+			self.wordWrap(s, label_width)
+			self.scaleHeight(s, label_height)
+			self.wordWrap(s, label_width)
 
 
 
