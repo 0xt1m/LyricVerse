@@ -17,21 +17,21 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>480</y>
-      <width>651</width>
-      <height>61</height>
+      <x>110</x>
+      <y>40</y>
+      <width>571</width>
+      <height>271</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>30</pointsize>
+      <pointsize>106</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Tex tLabel</string>
     </property>
     <property name="scaledContents">
      <bool>true</bool>

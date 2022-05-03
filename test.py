@@ -1,14 +1,23 @@
 
 
+def wordWrap(text, width, height):
+    text = text.replace("\n", " ")
+    return text
+
+
+print("hello world")
+a = "hello"
+a[0] = "a"
+print(a)
+# print(wordWrap("hello\nworld"))
 
 
 
 
-
-if "ісус навин" == "ісус навин":
-    print("alright")
-else:
-    print("adlkj")
+# if "ісус навин" == "ісус навин":
+#     print("alright")
+# else:
+#     print("adlkj")
 
 
 
