@@ -1,14 +1,52 @@
+import json
+
+d = {
+    "people": {
+        "name": "Tymophiy",
+        "gender": "Male",
+        "age": 18,
+        "adult": True,
+        "friends": ["Tolya", "Denys", "Vitalik", "David"]
+    },
+    "animal": {
+        "kind": "cat",
+        "bla": {
+            "one": 1
+        }
+    }
+}
+
+if d["animal"]["bla"]:
+    print("alright")
+
+# a = json.dumps(d, indent=4)
+# with open("test.json", "w") as jsonfile:
+#     jsonfile.write(a)
+
+# with open("test.json", "r") as readjson:
+#     data = json.load(readjson)
+
+# friends = data.get("people", "friends")
+# # data["age"] = 17
+# print(friends)
+
+# with open("test.json", "w") as jsonfile:
+#     jsonfile.write(json.dumps(data, indent=4))
+# print(a.get("people", "age"))
 
 
-def wordWrap(text, width, height):
-    text = text.replace("\n", " ")
-    return text
+# print(str(int(True)))
 
 
-print("hello world")
-a = "hello"
-a[0] = "a"
-print(a)
+# def wordWrap(text, width, height):
+#     text = text.replace("\n", " ")
+#     return text
+
+
+# print("hello world")
+# a = "hello"
+# a[0] = "a"
+# print(a)
 # print(wordWrap("hello\nworld"))
 
 

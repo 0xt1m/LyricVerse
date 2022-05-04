@@ -1,0 +1,17 @@
+{
+    "people": {
+        "name": "Tymophiy",
+        "gender": "Male",
+        "age": 18,
+        "adult": true,
+        "friends": [
+            "Tolya",
+            "Denys",
+            "Vitalik",
+            "David"
+        ]
+    },
+    "animal": {
+        "kind": "cat"
+    }
+}
