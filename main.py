@@ -86,15 +86,14 @@ class WordsWindow(QMainWindow):
 
 			self.label = QtWidgets.QLabel(self)
 			if settings[screen]["stream_mode"]:
-				font_size = settings[screen]["stream_mode_settings"]["font_size"]
-				text_color = settings[screen]["stream_mode_settings"]["text_color"]
-				font_size_info = settings[screen]["stream_mode_settings"]["font_size_info"]
-				text_color_info = settings[screen]["stream_mode_settings"]["text_color_info"]
+				mode = "stream_mode_settings"
 			else:
-				font_size = settings[screen]["simple_mode_settings"]["font_size"]
-				text_color = settings[screen]["simple_mode_settings"]["text_color"]
-				font_size_info = settings[screen]["simple_mode_settings"]["font_size_info"]
-				text_color_info = settings[screen]["simple_mode_settings"]["text_color_info"]
+				"simple_mode_settings"
+			
+			font_size = settings[screen][mode]["font_size"]
+			text_color = settings[screen][mode]["text_color"]
+			font_size_info = settings[screen][mode]["font_size_info"]
+			text_color_info = settings[screen][mode]["text_color_info"]
 			
 			f = QFont("Arial", font_size)
 			f.setBold(True)
@@ -112,6 +111,33 @@ class WordsWindow(QMainWindow):
 			f.setItalic(True)
 			self.label_info.setFont(f)
 			self.label_info.setStyleSheet(f"color: {text_color_info}")
+
+			if settings[screen][mode]["shadow"]:
+				shadow = QGraphicsDropShadowEffect()
+				try: 
+					shadow.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
+				except:
+					shadow.setBlurRadius(15)
+				try:
+					x = settings[screen][mode]["shadow_offset"]["x"]
+					y = settings[screen][mode]["shadow_offset"]["y"]
+					shadow.setOffset(x, y)
+				except:
+					pass
+				self.label.setGraphicsEffect(shadow)
+
+				shadow2 = QGraphicsDropShadowEffect()
+				try: 
+					shadow2.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
+				except:
+					shadow2.setBlurRadius(15)
+				try:
+					x = settings[screen][mode]["shadow_offset"]["x"]
+					y = settings[screen][mode]["shadow_offset"]["y"]
+					shadow2.setOffset(x, y)
+				except:
+					pass
+				self.label_info.setGraphicsEffect(shadow2)
 
 			self.quitSc = QShortcut(QKeySequence('Esc'), self)
 			self.quitSc.activated.connect(ScreenShower.hide_text)
