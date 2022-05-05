@@ -3,14 +3,14 @@
         "show_words": false,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 90,
+            "font_size": 55,
             "background": "black",
             "text_color": "white",
             "margins": {
                 "h": 100,
                 "v": 100
             },
-            "shadow": true,
+            "shadow": false,
             "shadow_blur_radius": 4,
             "shadow_offset": {
                 "x": 5,
@@ -78,7 +78,7 @@
             "font_size": 85,
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
-            "margin_bottom": 140,
+            "margin_bottom": 160,
             "shadow": true,
             "shadow_blur_radius": 20,
             "shadow_offset": {

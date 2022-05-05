@@ -699,6 +699,11 @@ class ScreenShower(QMainWindow):
 		except:
 			return
 
+		if settings[screen]["stream_mode"]:
+			self.ui.settings_mode_tabs.setCurrentIndex(1)
+		else:
+			self.ui.settings_mode_tabs.setCurrentIndex(0)
+
 		self.ui.checkbox_show_words.setChecked(settings[screen]["show_words"])
 		self.ui.font_size_input.setValue(settings[screen]["simple_mode_settings"]["font_size"])
 		self.ui.text_color_input.setText(settings[screen]["simple_mode_settings"]["text_color"])
@@ -756,9 +761,15 @@ class ScreenShower(QMainWindow):
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 
 		screen_number = self.ui.screensCB.currentText()
+		screen = "screen_" + str(screen_number)
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
+
+		if settings[screen]["stream_mode"]:
+			self.ui.settings_mode_tabs.setCurrentIndex(1)
+		else:
+			self.ui.settings_mode_tabs.setCurrentIndex(0)
 		
 		def check_stream_mode():
 			count_of_screens = QDesktopWidget().screenCount()
