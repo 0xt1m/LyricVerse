@@ -159,6 +159,7 @@ class Ui_MainWindow(object):
         self.label_2.setObjectName("label_2")
         self.font_size_input = QtWidgets.QSpinBox(self.simple_mode_settings_tab)
         self.font_size_input.setGeometry(QtCore.QRect(70, 20, 42, 22))
+        self.font_size_input.setMaximum(150)
         self.font_size_input.setObjectName("font_size_input")
         self.label_7 = QtWidgets.QLabel(self.simple_mode_settings_tab)
         self.label_7.setGeometry(QtCore.QRect(10, 50, 71, 16))
@@ -174,6 +175,10 @@ class Ui_MainWindow(object):
         self.stream_mode_settings_tab.setObjectName("stream_mode_settings_tab")
         self.font_size_input_stream = QtWidgets.QSpinBox(self.stream_mode_settings_tab)
         self.font_size_input_stream.setGeometry(QtCore.QRect(70, 20, 42, 22))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.font_size_input_stream.setFont(font)
+        self.font_size_input_stream.setMaximum(150)
         self.font_size_input_stream.setObjectName("font_size_input_stream")
         self.text_color_input_stream = QtWidgets.QLineEdit(self.stream_mode_settings_tab)
         self.text_color_input_stream.setGeometry(QtCore.QRect(80, 50, 71, 20))
@@ -195,8 +200,8 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabs.setCurrentIndex(2)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabs.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

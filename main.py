@@ -58,6 +58,43 @@ class Song:
 		return chour
 
 
+class smartLabel(QtWidgets.QLabel):
+	def __init__(self, screen):
+		super().__init__(screen)
+
+	def ownWordWrap(self, max_font_size=150):
+		font_size = 5
+		font = QFont("Arial", font_size)
+		self.setFont(font)
+
+		one_line_height = self.fontMetrics().boundingRect(self.text()).height()
+		count_of_lines = len(self.text().split("\n"))
+		current_height = one_line_height * count_of_lines
+
+		while current_height + font_size * 2 < self.size().height() and font_size <= max_font_size:
+			words = self.text().split()
+			ready_text = ""
+			active_text = ""
+			for w in range(len(words)):
+				current_width = self.fontMetrics().boundingRect(active_text + words[w] + " ").width()
+				if current_width + font_size * 2 > self.size().width():
+					ready_text += active_text.strip() + "\n"
+					active_text = ""
+				active_text += words[w] + " "
+			ready_text += active_text
+
+			font_size += 2
+			new_font = QFont("Arial", font_size)
+			new_font.setBold(True)
+			self.setFont(new_font)
+
+			one_line_height = self.fontMetrics().boundingRect(ready_text).height()
+			count_of_lines = len(ready_text.split("\n"))
+			current_height = one_line_height * count_of_lines
+			
+		self.setText(ready_text.strip())
+
+
 class WordsWindow(QMainWindow):
 	def __init__(self, screen_number):
 		super().__init__()
@@ -84,11 +121,11 @@ class WordsWindow(QMainWindow):
 			""" % (background)
 			self.setStyleSheet(styles)
 
-			self.label = QtWidgets.QLabel(self)
+			self.label = smartLabel(self)
 			if settings[screen]["stream_mode"]:
 				mode = "stream_mode_settings"
 			else:
-				"simple_mode_settings"
+				mode = "simple_mode_settings"
 			
 			font_size = settings[screen][mode]["font_size"]
 			text_color = settings[screen][mode]["text_color"]
@@ -100,8 +137,6 @@ class WordsWindow(QMainWindow):
 			self.label.setStyleSheet(f"color: {text_color}")
 			self.label.setFont(f)
 			self.label.setText("")
-			# self.label.setWordWrap(True)
-			# self.label.adjustSize()
 			self.label.setTextFormat(QtCore.Qt.AutoText)
 			self.label.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -134,88 +169,6 @@ class WordsWindow(QMainWindow):
 				try:
 					x = settings[screen][mode]["shadow_offset"]["x"]
 					y = settings[screen][mode]["shadow_offset"]["y"]
-					shadow2.setOffset(x, y)
-				except:
-					pass
-				self.label_info.setGraphicsEffect(shadow2)
-
-			self.quitSc = QShortcut(QKeySequence('Esc'), self)
-			self.quitSc.activated.connect(ScreenShower.hide_text)
-
-			monitor = QDesktopWidget().screenGeometry(self.screen_number)
-			self.move(monitor.left(), monitor.top())
-
-			self.showFullScreen()
-			self.isShowing = True
-
-
-class WordsWindowStream(QMainWindow):
-	def __init__(self, screen_number):
-		super().__init__()
-		self.screen_number = screen_number
-		self.init_ui()
-
-	def init_ui(self):
-		config = ConfigParser()
-		config.read("screens_config.ini")
-
-		# self.setWindowFlags(Qt.WindowStaysOnTopHint)
-		
-		self.isShowing = False
-		if config.get(f"screen_{self.screen_number}", "show_words") == "1":
-			self.setObjectName("WordsWindowStream")
-			# styles = """
-			# #WordsWindowStream {
-			# 	background: %s;
-			# } 
-			# """ % (config[f'screen_{self.screen_number}']['background'])
-			styles = "#WordsWindowStream {background-color: rgb(0,255,0)}"
-			self.setStyleSheet(styles)
-
-			self.label = QtWidgets.QLabel(self)
-			self.label.setGeometry(QtCore.QRect(80, 480, 651, 61))
-			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "stream_font_size")))
-			f.setBold(True)
-			self.label.setFont(f)
-			
-			self.label.setStyleSheet(f"""
-				color: {config[f'screen_{self.screen_number}']['text_color']};\n
-			""")
-			self.label.setText("")
-			self.label.setTextFormat(QtCore.Qt.AutoText)
-			self.label.setAlignment(QtCore.Qt.AlignCenter)
-
-			self.label_info = QtWidgets.QLabel(self)
-			self.label_info.setGeometry(QtCore.QRect(10, 10, 400, 400))
-			f = QFont("Arial", int(config.get(f"screen_{self.screen_number}", "font_size_info")))
-			f.setItalic(True)
-			self.label_info.setFont(f)
-
-			text_color = config.get(f"screen_{self.screen_number}", "color_info")
-			self.label_info.setStyleSheet(f"color: {text_color}")
-
-			if config.get(f"screen_{self.screen_number}", "shadow") == "1":
-				shadow = QGraphicsDropShadowEffect()
-				try: 
-					shadow.setBlurRadius(config.get(f"screen_{self.screen_number}", "shadow_blur_radius"))
-				except:
-					shadow.setBlurRadius(15)
-				try:
-					x = int(config.get(f"screen_{self.screen_number}", "shadow_offset").split()[0])
-					y = int(config.get(f"screen_{self.screen_number}", "shadow_offset").split()[1])
-					shadow.setOffset(x, y)
-				except:
-					pass
-				self.label.setGraphicsEffect(shadow)
-
-				shadow2 = QGraphicsDropShadowEffect()
-				try: 
-					shadow2.setBlurRadius(config.get(f"screen_{self.screen_number}", "shadow_blur_radius"))
-				except:
-					shadow2.setBlurRadius(15)
-				try:
-					x = int(config.get(f"screen_{self.screen_number}", "shadow_offset").split()[0])
-					y = int(config.get(f"screen_{self.screen_number}", "shadow_offset").split()[1])
 					shadow2.setOffset(x, y)
 				except:
 					pass
@@ -298,86 +251,6 @@ class ScreenShower(QMainWindow):
 		self.scaleHeight(1, 800)
 		self.wordWrap(1, 1400)
 		self.scaleHeight(1, 800)
-
-	def wordWrap(self, screen_number, width):
-		with open("screens_settings.json", "r") as jsonfile:
-			settings = json.load(jsonfile)
-
-		screen = "screen_" + str(screen_number)
-
-		if settings[screen]["stream_mode"]:
-			font_size = settings[screen]["stream_mode_settings"]["font_size"]
-		else:
-			font_size = settings[screen]["simple_mode_settings"]["font_size"]
-
-		text = self.screens[screen_number].label.text()
-		text = text.replace("\n", " ")
-		current_width = 0
-		active_text = ""
-		ready_text = ""
-		iteration_count = len(text)
-		s = 0
-		while s < iteration_count:
-			# Current text width of the label
-			current_width = self.screens[screen_number].label.fontMetrics().boundingRect(active_text).width()
-			# print(s)
-			try:
-				# If current text width is bigger than width of screen
-				if current_width + font_size > width:
-					# Go back to space (" ")
-					while text[s] != " ":
-						s -= 1
-					ready_text += text[:s+1].strip() + "\n"
-					text = text[s+1:].strip()
-					active_text = ""
-					iteration_count -= (s + 1)
-					s = 0
-
-				active_text += text[s]
-				s += 1
-			except:
-				# If text don't fit in one line
-				# Make font size less
-				text = self.screens[screen_number].label.text()
-				text = text.replace("\n", " ")
-				current_width = 0
-				active_text = ""
-				ready_text = ""
-				iteration_count = len(text)
-				s = 0
-				font_size -= 2
-				new_font = QFont("Arial", font_size)
-				new_font.setBold(True)
-				self.screens[screen_number].label.setFont(new_font)
-
-		ready_text += active_text
-		self.screens[screen_number].label.setText(ready_text)
-
-
-	def scaleHeight(self, screen_number, height):
-		with open("screens_settings.json", "r") as jsonfile:
-			settings = json.load(jsonfile)
-
-		screen = "screen_" + str(screen_number)
-
-		if settings[screen]["stream_mode"]:
-			font_size = settings[screen]["stream_mode_settings"]["font_size"]
-		else:
-			font_size = settings[screen]["simple_mode_settings"]["font_size"]
-
-		active_text = self.screens[screen_number].label.text()
-		
-		one_line_height = self.screens[screen_number].label.fontMetrics().boundingRect(active_text).height()
-		count_of_lines = len(active_text.split("\n"))
-		current_height = one_line_height * count_of_lines
-		while current_height + font_size > height:
-			font_size -= 1
-			new_font = QFont("Arial", font_size)
-			new_font.setBold(True)
-			self.screens[screen_number].label.setFont(new_font)
-			one_line_height = self.screens[screen_number].label.fontMetrics().boundingRect(active_text).height()
-			current_height = one_line_height * count_of_lines
-			# self.wordWrap(screen_number, 1480)
 
 
 	def set_bible(self):
@@ -536,8 +409,7 @@ class ScreenShower(QMainWindow):
 					screen_center_x - label_center_x, screen_size.height() - margin_bottom, 
 					label_width, one_line_height
 				)
-				self.wordWrap(s, screen_size.width() - 20)
-				self.scaleHeight(s, 150)
+				self.screens[s].label.ownWordWrap(font_size)
 			
 			elif settings[screen]["show_words"] and not settings[screen]["stream_mode"]:
 				if self.anyStreamMode:
@@ -548,9 +420,6 @@ class ScreenShower(QMainWindow):
 				self.screens[s].label.setText(part)
 				
 				font_size = settings[screen]["simple_mode_settings"]["font_size"]
-				f = QFont("Arial", font_size)
-				f.setBold(True)
-				self.screens[s].label.setFont(f)
 
 				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["margins"]["h"]
 				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["margins"]["v"]
@@ -567,9 +436,7 @@ class ScreenShower(QMainWindow):
 					label_height
 				)
 				# Set fit font
-				self.wordWrap(s, label_width)
-				self.scaleHeight(s, label_height)
-				# self.wordWrap(s, label_width)			
+				self.screens[s].label.ownWordWrap(font_size)	
 	
 	
 	def showBible(self):
@@ -614,9 +481,7 @@ class ScreenShower(QMainWindow):
 					bible_size["width"], 
 					bible_size["height"]
 				)
-				self.wordWrap(s, bible_size["width"])
-				self.scaleHeight(s, bible_size["height"])
-				self.wordWrap(s, bible_size["width"])
+				self.screens[s].label.ownWordWrap(font_size)
 
 				bible_place = self.list_to_bible_place(self.bible_place)
 				self.screens[s].label_info.setText(bible_place)
@@ -652,9 +517,7 @@ class ScreenShower(QMainWindow):
 					label_height
 				)
 				# Set fit font
-				self.wordWrap(s, label_width)
-				self.scaleHeight(s, label_height)
-				self.wordWrap(s, label_width)
+				self.screens[s].label.ownWordWrap(font_size)
 
 				bible_place = self.list_to_bible_place(self.bible_place)
 				self.screens[s].label_info.setText(bible_place)
@@ -787,21 +650,12 @@ class ScreenShower(QMainWindow):
 
 
 	def open_window(self):
-		# with open("screens_settings.json", "r") as jsonfile:
-		# 	settings = json.load(jsonfile)
-
 		self.screens = []
 
 		count_of_screens = QDesktopWidget().screenCount()
 		for i in range(count_of_screens):
-			# stream_mode = bool(int(config.get(f"screen_{i}", "stream_mode")))
-			# if stream_mode:
-			# 	self.screens.append(WordsWindowStream(i))
-			# elif not stream_mode:
 			self.screens.append(WordsWindow(i))
-
-		# self.screens[1].label.setText("Hello")
-
+	
 	
 	def close_window(self):
 		try:
@@ -834,8 +688,8 @@ class ScreenShower(QMainWindow):
 		screen_number = self.ui.screensCB.currentText()
 		screen = "screen_" + str(screen_number)
 
-		self.ui.checkbox_show_words.setChecked(False)
-		self.ui.checkbox_stream_mode.setChecked(False)
+		# self.ui.checkbox_show_words.setChecked(False)
+		# self.ui.checkbox_stream_mode.setChecked(False)
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -850,7 +704,7 @@ class ScreenShower(QMainWindow):
 		self.ui.text_color_input.setText(settings[screen]["simple_mode_settings"]["text_color"])
 		self.ui.shadow_checkbox.setChecked(settings[screen]["simple_mode_settings"]["shadow"])
 		
-		self.ui.checkbox_stream_mode.setChecked(settings[screen]["show_words"])
+		self.ui.checkbox_stream_mode.setChecked(settings[screen]["stream_mode"])
 		self.ui.font_size_input_stream.setValue(settings[screen]["stream_mode_settings"]["font_size"])
 		self.ui.text_color_input_stream.setText(settings[screen]["stream_mode_settings"]["text_color"])
 		self.ui.shadow_checkbox_stream.setChecked(settings[screen]["stream_mode_settings"]["shadow"])
@@ -905,8 +759,6 @@ class ScreenShower(QMainWindow):
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
-
-		# show_words = bool(int(config.get(f"screen_{screen_number}", "show_words")))
 		
 		def check_stream_mode():
 			count_of_screens = QDesktopWidget().screenCount()

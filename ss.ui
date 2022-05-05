@@ -38,7 +38,7 @@
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="songs">
      <attribute name="title">
@@ -405,7 +405,7 @@
        <string>Show words</string>
       </property>
      </widget>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="settings_mode_tabs">
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -418,7 +418,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="simple_mode_settings_tab">
        <attribute name="title">
@@ -445,6 +445,9 @@
           <width>42</width>
           <height>22</height>
          </rect>
+        </property>
+        <property name="maximum">
+         <number>150</number>
         </property>
        </widget>
        <widget class="QLabel" name="label_7">
@@ -499,6 +502,14 @@
           <width>42</width>
           <height>22</height>
          </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="maximum">
+         <number>150</number>
         </property>
        </widget>
        <widget class="QLineEdit" name="text_color_input_stream">
