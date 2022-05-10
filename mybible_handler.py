@@ -117,6 +117,12 @@ class Mybible:
 			if self.all_books[i].book_number == book_number:
 				return i
 
+
+	def get_book_title_by_number(self, book_number):
+		for i in range(len(self.all_books)):
+			if self.all_books[i].book_number == book_number:
+				return self.all_books[i].long_name
+
 	
 	def get_book_by_number(self, book_number):
 		b = self.cursor.execute(f"SELECT * FROM books WHERE book_number={book_number}").fetchall()

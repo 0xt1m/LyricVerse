@@ -6,7 +6,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect
 from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
 
-from configparser import ConfigParser
 from mybible_handler import Mybible
 
 import sqlite3
@@ -14,6 +13,7 @@ import json
 
 import sys
 import time
+
 
 class Song:
 	def __init__(self, songbook, song_title):
@@ -71,7 +71,7 @@ class smartLabel(QtWidgets.QLabel):
 		count_of_lines = len(self.text().split("\n"))
 		current_height = one_line_height * count_of_lines
 
-		while current_height + font_size * 2 < self.size().height() and font_size <= max_font_size:
+		while current_height + font_size * 2.3 < self.size().height() and font_size <= max_font_size:
 			words = self.text().split()
 			ready_text = ""
 			active_text = ""
@@ -147,32 +147,7 @@ class WordsWindow(QMainWindow):
 			self.label_info.setFont(f)
 			self.label_info.setStyleSheet(f"color: {text_color_info}")
 
-			if settings[screen][mode]["shadow"]:
-				shadow = QGraphicsDropShadowEffect()
-				try: 
-					shadow.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
-				except:
-					shadow.setBlurRadius(15)
-				try:
-					x = settings[screen][mode]["shadow_offset"]["x"]
-					y = settings[screen][mode]["shadow_offset"]["y"]
-					shadow.setOffset(x, y)
-				except:
-					pass
-				self.label.setGraphicsEffect(shadow)
-
-				shadow2 = QGraphicsDropShadowEffect()
-				try: 
-					shadow2.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
-				except:
-					shadow2.setBlurRadius(15)
-				try:
-					x = settings[screen][mode]["shadow_offset"]["x"]
-					y = settings[screen][mode]["shadow_offset"]["y"]
-					shadow2.setOffset(x, y)
-				except:
-					pass
-				self.label_info.setGraphicsEffect(shadow2)
+			self.setShadow()
 
 			self.quitSc = QShortcut(QKeySequence('Esc'), self)
 			self.quitSc.activated.connect(ScreenShower.hide_text)
@@ -184,6 +159,100 @@ class WordsWindow(QMainWindow):
 			self.isShowing = True
 
 
+	def setShadow(self):
+		with open("screens_settings.json", "r") as jsonfile:
+			settings = json.load(jsonfile)
+
+		screen = "screen_" + str(self.screen_number)
+		if settings[screen]["stream_mode"]:
+			mode = "stream_mode_settings"
+		else:
+			mode = "simple_mode_settings"
+		
+		if settings[screen][mode]["shadow"]:
+			shadow = QGraphicsDropShadowEffect()
+			try: 
+				shadow.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
+			except:
+				shadow.setBlurRadius(15)
+			try:
+				x = settings[screen][mode]["shadow_offset"]["x"]
+				y = settings[screen][mode]["shadow_offset"]["y"]
+				shadow.setOffset(x, y)
+			except:
+				pass
+			self.label.setGraphicsEffect(shadow)
+
+			shadow2 = QGraphicsDropShadowEffect()
+			try: 
+				shadow2.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
+			except:
+				shadow2.setBlurRadius(15)
+			try:
+				x = settings[screen][mode]["shadow_offset"]["x"]
+				y = settings[screen][mode]["shadow_offset"]["y"]
+				shadow2.setOffset(x, y)
+			except:
+				pass
+			self.label_info.setGraphicsEffect(shadow2)
+		else:
+			shadow = QGraphicsDropShadowEffect()
+			shadow.setBlurRadius(0)
+			shadow.setOffset(0, 0)
+			self.label.setGraphicsEffect(shadow)
+			self.label_info.setGraphicsEffect(shadow)
+
+
+class addSongWindow(QMainWindow):
+	def __init__(self, songbook):
+		super().__init__()
+
+		self.songbook = songbook
+		self.init_ui()
+
+	def init_ui(self):
+		self.resize(330, 540)
+		self.song_title = QtWidgets.QLineEdit(self)
+		self.song_title.setGeometry(10, 10, 310, 20)
+		self.song_title.setObjectName("lineEdit")
+		self.song_text = QtWidgets.QPlainTextEdit(self)
+		self.song_text.setGeometry(10, 35, 310, 450)
+		self.song_text.setObjectName("plainTextEdit")
+		self.add_song_btn = QtWidgets.QPushButton(self)
+		self.add_song_btn.setGeometry(10, 490, 310, 40)
+		self.add_song_btn.setObjectName("pushButton")
+
+		self.setWindowTitle("New song")
+		self.song_title.setPlaceholderText("Enter song title")
+		self.song_text.setPlaceholderText("Enter song text")
+		self.add_song_btn.setText("Add")
+
+		self.add_song_btn.clicked.connect(self.add_song)
+
+
+	def add_song(self):
+		with open("Songbooks/songbooks.json", "r") as jsonfile:
+			songbooks = json.load(jsonfile)
+
+		filename = songbooks[self.songbook]["filename"]
+		
+		song_title = self.song_title.text()
+		song_text = self.song_text.toPlainText()
+		if not song_title:
+			print("error song title")
+		elif not song_text:
+			print("error song text")
+		else:
+			connection = sqlite3.connect(f"Songbooks/{filename}")
+			cursor = connection.cursor()
+			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
+			connection.commit()
+			self.song_title.setText("")
+			self.song_text.clear()
+			# print(song_title)
+			# print(song_text)
+
+
 class ScreenShower(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -193,11 +262,16 @@ class ScreenShower(QMainWindow):
 
 	
 	def init_ui(self):
+		self.anyStreamMode = self.check_stream_mode()
+
 		self.setFixedSize(650, 550)
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
+		self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 		self.ui.list_words.itemPressed.connect(self.showSong)
+		# self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
+		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
 		self.ui.screensCB.currentTextChanged.connect(self.set_settings_from_screen)
@@ -208,14 +282,12 @@ class ScreenShower(QMainWindow):
 		self.ui.bible_books_list.itemSelectionChanged.connect(self.get_chapters)
 		self.ui.bible_chapters_list.itemSelectionChanged.connect(self.get_verses)
 		self.ui.bible_verses_list.setWordWrap(True)
-		self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
-		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
 		self.ui.book_input.textChanged.connect(self.search_book)
 		self.ui.chapter_input.textChanged.connect(self.search_chapter)
 		self.ui.verse_input.textChanged.connect(self.search_verse)
 		self.ui.quick_bible_search.textChanged.connect(self.quick_search)
 		self.ui.bible_search.textChanged.connect(self.search_in_bible)
-		self.ui.new_song_btn.clicked.connect(self.test)
+		self.ui.new_song_btn.clicked.connect(self.new_song)
 
 		self.ui.list_words.setSpacing(5)
 
@@ -228,7 +300,7 @@ class ScreenShower(QMainWindow):
 
 		self.get_songs_from_songbook()
 
-		with open("bible_translations/bible_translations.json", "r") as json_file:
+		with open("Bible_translations/bible_translations.json", "r") as json_file:
 			self.bible_translations = json.load(json_file)
 	
 		self.bible_translations_names = list(self.bible_translations.keys())
@@ -241,8 +313,9 @@ class ScreenShower(QMainWindow):
 			self.ui.screensCB.addItem(str(i))
 
 		self.bible_place = [None, None, None]
+		self.lastShown = None
+		self.streamModeChanged = False
 
-		self.anyStreamMode = False
 		self.set_settings_for_screen()
 		self.open_window()
 
@@ -253,8 +326,25 @@ class ScreenShower(QMainWindow):
 		self.scaleHeight(1, 800)
 
 
+	def check_stream_mode(self):
+		with open("screens_settings.json", "r") as jsonfile:
+			settings = json.load(jsonfile)
+
+		count_of_screens = QDesktopWidget().screenCount()
+		for s in range(count_of_screens):
+			if settings[f"screen_{s}"]["stream_mode"]:
+				return True
+		return False
+	
+
+	def new_song(self):
+		self.addsong = addSongWindow(self.ui.av_songbooks.currentText())
+
+		self.addsong.show()
+
+
 	def set_bible(self):
-		self.bible = Mybible("bible_translations/%s" % (self.bible_translations[self.ui.av_translations.currentText()]["filename"]))
+		self.bible = Mybible("Bible_translations/%s" % (self.bible_translations[self.ui.av_translations.currentText()]["filename"]))
 		self.ui.bible_books_list.clear()
 		try:
 			for book in self.bible.all_books:
@@ -273,10 +363,12 @@ class ScreenShower(QMainWindow):
 		for i in range(1, count_of_chapters + 1):
 			self.ui.bible_chapters_list.addItem(str(i))
 		self.ui.bible_chapters_list.setCurrentRow(0)
-		self.hide_text()
 
 	
 	def get_verses(self):
+		try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+		except: pass
+
 		book_number = int(self.bible.book_to_number(self.ui.bible_books_list.currentItem().text()))
 		try:
 			chapter = int(self.ui.bible_chapters_list.currentItem().text())
@@ -289,7 +381,9 @@ class ScreenShower(QMainWindow):
 				counter += 1
 		except:
 			pass
-		self.hide_text()
+
+		self.ui.bible_verses_list.setCurrentRow(0)
+		self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
 
 	
 	def search_book(self):
@@ -297,33 +391,27 @@ class ScreenShower(QMainWindow):
 		try:
 			book_number = self.bible.book_to_number(reqest.split()[0])
 			self.ui.bible_books_list.setCurrentRow(self.bible.get_book_index_by_number(book_number))
-			self.ui.bible_books_list.scrollToItem(self.ui.bible_books_list.currentItem())
 		except Exception as error:
-			self.ui.bible_books_list.setCurrentRow(0)
-			self.ui.bible_books_list.scrollToItem(self.ui.bible_books_list.currentItem())
+			pass
 
 
 	def search_chapter(self):
-		reqest = self.ui.chapter_input.text()
+		request = self.ui.chapter_input.text()
 		try:
-			chapter = int(reqest)
+			chapter = int(request)
 			self.ui.bible_chapters_list.setCurrentRow(chapter - 1)
-			self.ui.bible_chapters_list.scrollToItem(self.ui.bible_chapters_list.currentItem())
 		except:
 			pass
 
 
 	def search_verse(self):
-		try:
-			self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
-		except:
-			pass
+		try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+		except: pass
 
-		reqest = self.ui.verse_input.text()
+		request = self.ui.verse_input.text()
 		try:
-			verse = int(reqest)
+			verse = int(request)
 			self.ui.bible_verses_list.setCurrentRow(verse - 1)
-			self.ui.bible_verses_list.scrollToItem(self.ui.bible_verses_list.currentItem())	
 		except Exception as error:
 			pass
 		self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
@@ -351,6 +439,22 @@ class ScreenShower(QMainWindow):
 			self.ui.verse_input.setText("")
 
 
+	def search_in_bible(self):
+		reqest = self.ui.bible_search.text()
+		try:
+			search_res = self.bible.find_by_text(reqest)
+			book_index = self.bible.get_book_index_by_number(int(search_res.book_number))
+			self.ui.bible_books_list.setCurrentRow(book_index)
+
+			self.ui.bible_chapters_list.setCurrentRow(int(search_res.chapter) - 1)
+
+			try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+			except: pass
+			self.ui.bible_verses_list.setCurrentRow(int(search_res.verse) - 1)
+		except Exception as error:
+			pass
+
+
 	def get_songs_from_songbook(self):
 		self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[self.ui.av_songbooks.currentText()]["filename"]}')
 		self.cursor = self.connection.cursor()
@@ -375,6 +479,8 @@ class ScreenShower(QMainWindow):
 			self.screens[1]
 		except:
 			self.open_window()
+
+		self.lastShown = "song"
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -409,6 +515,7 @@ class ScreenShower(QMainWindow):
 					screen_center_x - label_center_x, screen_size.height() - margin_bottom, 
 					label_width, one_line_height
 				)
+				self.screens[s].setShadow()
 				self.screens[s].label.ownWordWrap(font_size)
 			
 			elif settings[screen]["show_words"] and not settings[screen]["stream_mode"]:
@@ -421,8 +528,8 @@ class ScreenShower(QMainWindow):
 				
 				font_size = settings[screen]["simple_mode_settings"]["font_size"]
 
-				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["margins"]["h"]
-				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["margins"]["v"]
+				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["song_margins"]["h"]
+				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["song_margins"]["v"]
 
 				# Set label to center
 				label_center_x = label_width / 2
@@ -435,15 +542,18 @@ class ScreenShower(QMainWindow):
 					label_width,
 					label_height
 				)
+				self.screens[s].setShadow()
 				# Set fit font
 				self.screens[s].label.ownWordWrap(font_size)	
 	
-	
+
 	def showBible(self):
 		try:
 			self.screens[1]
 		except:
 			self.open_window()
+
+		self.lastShown = "bible"
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -471,16 +581,17 @@ class ScreenShower(QMainWindow):
 
 				bible_position = settings[screen]["stream_mode_settings"]["bible_position"]
 				bible_size = settings[screen]["stream_mode_settings"]["bible_size"]
-				
-				label_size = self.screens[s].label.size()
-				label_center_x = label_size.width() / 2
-				label_center_y = label_size.height() / 2
+
+				label_center_x = bible_size["width"] / 2
+				label_center_y = bible_size["height"] / 2
 				self.screens[s].label.setGeometry(
 					bible_position["x"] - label_center_x, 
 					bible_position["y"] - label_center_y, 
 					bible_size["width"], 
 					bible_size["height"]
 				)
+
+				self.screens[s].setShadow()
 				self.screens[s].label.ownWordWrap(font_size)
 
 				bible_place = self.list_to_bible_place(self.bible_place)
@@ -502,8 +613,8 @@ class ScreenShower(QMainWindow):
 				f.setBold(True)
 				self.screens[s].label.setFont(f)
 
-				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["margins"]["h"]
-				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["margins"]["v"]
+				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["bible_margins"]["h"]
+				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["bible_margins"]["v"]
 
 				# Set label to center
 				label_center_x = label_width / 2
@@ -516,6 +627,7 @@ class ScreenShower(QMainWindow):
 					label_width,
 					label_height
 				)
+				self.screens[s].setShadow()
 				# Set fit font
 				self.screens[s].label.ownWordWrap(font_size)
 
@@ -569,31 +681,11 @@ class ScreenShower(QMainWindow):
 			self.ui.list_songs.setCurrentRow(0)
 		except:
 			pass
-
-	
-	def search_in_bible(self):
-		try:
-			self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
-		except:
-			pass
-
-		reqest = self.ui.bible_search.text()
-		try:
-			search_res = self.bible.find_by_text(reqest)
-			self.ui.bible_books_list.setCurrentRow(self.bible.get_book_index_by_number(int(search_res.book_number)))
-			self.ui.bible_books_list.scrollToItem(self.ui.bible_books_list.currentItem())
-
-			self.ui.bible_chapters_list.setCurrentRow(int(search_res.chapter) - 1)
-			self.ui.bible_chapters_list.scrollToItem(self.ui.bible_chapters_list.currentItem())
-
-			self.ui.bible_verses_list.setCurrentRow(int(search_res.verse) - 1)
-			self.ui.bible_verses_list.scrollToItem(self.ui.bible_verses_list.currentItem())	
-		except Exception as error:
-			pass
-		self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
 	
 
 	def getWords(self):
+		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+
 		text_l = self.ui.list_songs.currentItem().text().split()
 		text_l.pop(0)
 		
@@ -601,40 +693,36 @@ class ScreenShower(QMainWindow):
 		for t in text_l:
 			song_title += t + " "
 		song_title = song_title.strip()
+
+		song = Song(self.songbooks[self.ui.av_songbooks.currentText()]["filename"], song_title)
+		song_couplets = song.getCouplets()
+		song_chour = song.getChour()
+
+		self.ui.list_words.clear()
 		
-		try:
-			song = Song(self.songbooks[self.ui.av_songbooks.currentText()]["filename"], song_title)
-			song_couplets = song.getCouplets()
-			song_chour = song.getChour()
+		self.song_list_parts = []
+		self.song_list_lines = []
+		for i in song_couplets:
+			self.song_list_parts.append(i)
+			if song_chour != "":
+				self.song_list_parts.append(song_chour)
+		
+		if self.anyStreamMode:
+			for part in range(len(self.song_list_parts)):
+				for line in self.song_list_parts[part].split("\n"):
+					self.song_list_lines.append(line + " " + str(part))
 
-			self.ui.list_words.clear()
-			
-			self.song_list_parts = []
-			self.song_list_lines = []
-			for i in song_couplets:
-				self.song_list_parts.append(i)
-				if song_chour != "":
-					self.song_list_parts.append(song_chour)
-			
-			if self.anyStreamMode:
-				for part in range(len(self.song_list_parts)):
-					for line in self.song_list_parts[part].split("\n"):
-						self.song_list_lines.append(line + " " + str(part))
+			for line in self.song_list_lines:
+				self.ui.list_words.addItem(line[:-2])
+		elif not self.anyStreamMode:
+			self.ui.list_words.addItems(self.song_list_parts)
+		
+		self.ui.list_words.setCurrentRow(0)
+		self.ui.list_words.scrollToItem(self.ui.list_words.currentItem())
 
-				for line in self.song_list_lines:
-					self.ui.list_words.addItem(line[:-2])
-			elif not self.anyStreamMode:
-				self.ui.list_words.addItems(self.song_list_parts)
-			
-			self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
-			
-			self.ui.list_words.setCurrentRow(0)
-			self.ui.list_words.scrollToItem(self.ui.list_words.currentItem())
+		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 
-			self.ui.list_words.itemSelectionChanged.connect(self.showSong)
-		except:
-			pass
-		self.hide_text()
+		# self.hide_text()
 
 
 	def list_to_bible_place(self, l):
@@ -668,6 +756,11 @@ class ScreenShower(QMainWindow):
 				s.isShowing = False
 				s.close()	
 
+		try:
+			self.addsong.close()
+		except:
+			pass
+
 
 	def hide_text(self):
 		try:
@@ -687,9 +780,6 @@ class ScreenShower(QMainWindow):
 	def set_settings_from_screen(self):
 		screen_number = self.ui.screensCB.currentText()
 		screen = "screen_" + str(screen_number)
-
-		# self.ui.checkbox_show_words.setChecked(False)
-		# self.ui.checkbox_stream_mode.setChecked(False)
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -745,6 +835,11 @@ class ScreenShower(QMainWindow):
 		settings[screen]["simple_mode_settings"]["font_size"] = font_size
 		settings[screen]["simple_mode_settings"]["shadow"] = shadow
 
+		if settings[screen]["stream_mode"] != stream_mode:
+			self.streamModeChanged = True
+		else:
+			self.streamModeChanged = False
+
 		settings[screen]["stream_mode"] = stream_mode
 		settings[screen]["stream_mode_settings"]["text_color"] = text_color_stream
 		settings[screen]["stream_mode_settings"]["font_size"] = font_size_stream
@@ -757,9 +852,32 @@ class ScreenShower(QMainWindow):
 
 
 	def set_settings_for_screen(self):
-		self.hide_text()
-		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+		self.anyStreamMode = self.check_stream_mode()
 
+		if not self.streamModeChanged:
+			if self.lastShown == None:
+				self.hide_text()
+			elif self.lastShown == "song":
+				try:
+					self.hide_text()
+					self.showSong()
+				except Exception as error:
+					print(error)
+					self.hide_text()
+			elif self.lastShown == "bible":
+				try:
+					self.hide_text()
+					self.showBible()
+				except Exception as error:
+					print(error)
+					self.hide_text()
+		else:
+			self.open_window()
+			self.hide_text()
+			self.getWords()
+
+		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+		
 		screen_number = self.ui.screensCB.currentText()
 		screen = "screen_" + str(screen_number)
 
@@ -770,22 +888,7 @@ class ScreenShower(QMainWindow):
 			self.ui.settings_mode_tabs.setCurrentIndex(1)
 		else:
 			self.ui.settings_mode_tabs.setCurrentIndex(0)
-		
-		def check_stream_mode():
-			count_of_screens = QDesktopWidget().screenCount()
-			for s in range(count_of_screens):
-				if settings[f"screen_{s}"]["stream_mode"]:
-					return True
-			return False
 
-		self.anyStreamMode = check_stream_mode()
-
-		try:
-			self.getWords()
-		except AttributeError:
-			pass
-
-		self.open_window()
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 	
 

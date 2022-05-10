@@ -3,11 +3,15 @@
         "show_words": false,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 55,
+            "font_size": 60,
             "background": "black",
             "text_color": "white",
-            "margins": {
-                "h": 100,
+            "song_margins": {
+                "h": 50,
+                "v": 100
+            },
+            "bible_margins": {
+                "h": 50,
                 "v": 100
             },
             "shadow": false,
@@ -24,11 +28,11 @@
             }
         },
         "stream_mode_settings": {
-            "font_size": 50,
+            "font_size": 70,
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
-            "shadow": false,
+            "shadow": true,
             "shadow_blur_radius": 4,
             "shadow_offset": {
                 "x": 5,
@@ -54,12 +58,16 @@
         "show_words": true,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 99,
+            "font_size": 120,
             "background": "black",
             "text_color": "white",
-            "margins": {
+            "song_margins": {
+                "h": 20,
+                "v": 20
+            },
+            "bible_margins": {
                 "h": 50,
-                "v": 100
+                "v": 202
             },
             "shadow": false,
             "shadow_blur_radius": 10,
@@ -67,15 +75,15 @@
                 "x": 5,
                 "y": 5
             },
-            "font_size_info": 35,
+            "font_size_info": 45,
             "text_color_info": "white",
             "info_position": {
-                "x": 1500,
+                "x": 100,
                 "y": 980
             }
         },
         "stream_mode_settings": {
-            "font_size": 85,
+            "font_size": 80,
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
@@ -108,8 +116,12 @@
             "font_size": 90,
             "background": "black",
             "text_color": "white",
-            "margins": {
-                "h": 100,
+            "song_margins": {
+                "h": 50,
+                "v": 100
+            },
+            "bible_margins": {
+                "h": 50,
                 "v": 100
             },
             "shadow": true,
