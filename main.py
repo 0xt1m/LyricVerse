@@ -2,10 +2,11 @@ from design import Ui_MainWindow
 # from words_window import Ui_WordsWindow
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect
+from PyQt5.QtCore import Qt, QUrl, QFileInfo
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect, QFileDialog
 from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
 
+from addSongbook import AddSongbookWindow
 from mybible_handler import Mybible
 
 import sqlite3
@@ -264,13 +265,12 @@ class ScreenShower(QMainWindow):
 	def init_ui(self):
 		self.anyStreamMode = self.check_stream_mode()
 
-		self.setFixedSize(650, 550)
+		self.setFixedSize(650, 580)
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
 		self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 		self.ui.list_words.itemPressed.connect(self.showSong)
-		# self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
 		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
@@ -288,6 +288,7 @@ class ScreenShower(QMainWindow):
 		self.ui.quick_bible_search.textChanged.connect(self.quick_search)
 		self.ui.bible_search.textChanged.connect(self.search_in_bible)
 		self.ui.new_song_btn.clicked.connect(self.new_song)
+		self.ui.add_songbook_btn.clicked.connect(self.add_songbook)
 
 		self.ui.list_words.setSpacing(5)
 
@@ -326,6 +327,13 @@ class ScreenShower(QMainWindow):
 		self.scaleHeight(1, 800)
 
 
+	def add_songbook(self):
+		self.add_songbook_window = AddSongbookWindow()
+		self.add_songbook_window.show()
+
+		self.add_songbook_window.closeEvent = self.updateSongbooks
+
+
 	def check_stream_mode(self):
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -339,8 +347,19 @@ class ScreenShower(QMainWindow):
 
 	def new_song(self):
 		self.addsong = addSongWindow(self.ui.av_songbooks.currentText())
-
 		self.addsong.show()
+
+
+	def updateSongbooks(self, event):
+		with open("Songbooks/songbooks.json", "r") as json_file:
+			self.songbooks = json.load(json_file)
+		
+		self.songbook_names = list(self.songbooks.keys())
+		self.ui.av_songbooks.clear()
+		for s in self.songbook_names:
+			self.ui.av_songbooks.addItem(s)
+
+		self.get_songs_from_songbook()
 
 
 	def set_bible(self):
@@ -456,17 +475,20 @@ class ScreenShower(QMainWindow):
 
 
 	def get_songs_from_songbook(self):
-		self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[self.ui.av_songbooks.currentText()]["filename"]}')
-		self.cursor = self.connection.cursor()
-		song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
-		
-		self.hide_text()
-		self.ui.list_songs.clear()
-		self.ui.list_words.clear()
-		for i in song_names:
-			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
+		try:
+			self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[self.ui.av_songbooks.currentText()]["filename"]}')
+			self.cursor = self.connection.cursor()
+			song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
+			
+			self.ui.list_songs.clear()
+			self.ui.list_words.clear()
+			for i in song_names:
+				self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
 
-		self.searchSong()
+			self.searchSong()
+		except:
+			pass
+		self.hide_text()
 
 	
 	def closeEvent(self, event):
@@ -746,20 +768,18 @@ class ScreenShower(QMainWindow):
 	
 	
 	def close_window(self):
-		try:
-			self.screens[1]
-		except:
-			return
+		try: self.screens[1]
+		except: return
 		
 		for s in self.screens:
-			if s.isShowing:
-				s.isShowing = False
-				s.close()	
+			try: s.close()	
+			except: pass
 
-		try:
-			self.addsong.close()
-		except:
-			pass
+		try: self.addsong.close()
+		except: pass
+
+		try: self.add_songbook_window.close()
+		except: pass
 
 
 	def hide_text(self):
