@@ -3,7 +3,7 @@ from design import Ui_MainWindow
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, QUrl, QFileInfo
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect, QFileDialog, QMessageBox
 from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
 
 from addSongbook import AddSongbookWindow
@@ -21,6 +21,8 @@ class Song:
 		db = sqlite3.connect(f"Songbooks/{songbook}")
 		self.sql = db.cursor()
 		self.song = self.sql.execute(f"SELECT * FROM Songs WHERE title='{song_title}'").fetchall()
+		self.id = self.song[0][0]
+		self.title = song_title
 		self.song_text = self.song[0][2]
 		song_text_lines = self.song_text.split("\n")
 		self.song_list = []
@@ -31,10 +33,8 @@ class Song:
 					self.song_list.append(part_of_song)
 					part_of_song = ""
 			part_of_song += song_text_lines[t] + "\n"
-		self.song_list.append(part_of_song)
+		self.song_list.append(part_of_song.strip())
 
-	def getSongList(self):
-		return self.song_list
 
 	def getCouplets(self):
 		couplets = []
@@ -235,14 +235,20 @@ class addSongWindow(QMainWindow):
 		with open("Songbooks/songbooks.json", "r") as jsonfile:
 			songbooks = json.load(jsonfile)
 
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setWindowTitle("Error")
+
 		filename = songbooks[self.songbook]["filename"]
 		
 		song_title = self.song_title.text()
 		song_text = self.song_text.toPlainText()
 		if not song_title:
-			print("error song title")
+			msg.setText("Song must to have title!")	
+			msg.exec_()
 		elif not song_text:
-			print("error song text")
+			msg.setText("Song must to have text!")	
+			msg.exec_()
 		else:
 			connection = sqlite3.connect(f"Songbooks/{filename}")
 			cursor = connection.cursor()
@@ -250,8 +256,66 @@ class addSongWindow(QMainWindow):
 			connection.commit()
 			self.song_title.setText("")
 			self.song_text.clear()
+			self.close()
 			# print(song_title)
 			# print(song_text)
+
+
+class EditSongWindow(QMainWindow):
+	def __init__(self, songbook, title):
+		super().__init__()
+
+		self.songbook = songbook
+		self.title = title
+		self.init_ui()
+
+	def init_ui(self):
+		self.resize(330, 540)
+
+		self.song = Song(self.songbook + ".db", self.title)
+
+		self.song_title_input = QtWidgets.QLineEdit(self)
+		self.song_title_input.setGeometry(10, 10, 310, 20)
+		self.song_text_input = QtWidgets.QPlainTextEdit(self)
+		self.song_text_input.setGeometry(10, 35, 310, 450)
+		self.save_song_btn = QtWidgets.QPushButton(self)
+		self.save_song_btn.setGeometry(10, 490, 310, 40)
+
+		self.setWindowTitle("Edit song")
+		self.song_title_input.setPlaceholderText("Enter song title")
+		self.song_text_input.setPlaceholderText("Enter song text")
+		self.save_song_btn.setText("Save")
+
+		self.song_title_input.setText(self.song.title)
+		self.song_text_input.appendPlainText(self.song.song_text)
+
+		self.save_song_btn.clicked.connect(self.save_song)
+
+
+	def save_song(self):
+		with open("Songbooks/songbooks.json", "r") as jsonfile:
+			songbooks = json.load(jsonfile)
+
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setWindowTitle("Error")
+
+		filename = songbooks[self.songbook]["filename"]
+		
+		song_title = self.song_title_input.text()
+		song_text = self.song_text_input.toPlainText()
+		if not song_title:
+			msg.setText("Song must to have title!")	
+			msg.exec_()
+		elif not song_text:
+			msg.setText("Song must to have text!")	
+			msg.exec_()
+		else:
+			connection = sqlite3.connect(f"Songbooks/{filename}")
+			cursor = connection.cursor()
+			cursor.execute("UPDATE Songs SET title=?, song_text=? WHERE title=?", (song_title, song_text, self.title))
+			connection.commit()
+			self.close()
 
 
 class ScreenShower(QMainWindow):
@@ -267,7 +331,6 @@ class ScreenShower(QMainWindow):
 
 		self.setFixedSize(650, 580)
 		self.ui.song_search.textChanged.connect(self.searchSong)
-		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
 		self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 		self.ui.list_words.itemPressed.connect(self.showSong)
@@ -288,6 +351,7 @@ class ScreenShower(QMainWindow):
 		self.ui.quick_bible_search.textChanged.connect(self.quick_search)
 		self.ui.bible_search.textChanged.connect(self.search_in_bible)
 		self.ui.new_song_btn.clicked.connect(self.new_song)
+		self.ui.edit_song_btn.clicked.connect(self.edit_song)
 		self.ui.add_songbook_btn.clicked.connect(self.add_songbook)
 
 		self.ui.list_words.setSpacing(5)
@@ -320,19 +384,6 @@ class ScreenShower(QMainWindow):
 		self.set_settings_for_screen()
 		self.open_window()
 
-	
-	def test(self):
-		self.scaleHeight(1, 800)
-		self.wordWrap(1, 1400)
-		self.scaleHeight(1, 800)
-
-
-	def add_songbook(self):
-		self.add_songbook_window = AddSongbookWindow()
-		self.add_songbook_window.show()
-
-		self.add_songbook_window.closeEvent = self.updateSongbooks
-
 
 	def check_stream_mode(self):
 		with open("screens_settings.json", "r") as jsonfile:
@@ -343,23 +394,54 @@ class ScreenShower(QMainWindow):
 			if settings[f"screen_{s}"]["stream_mode"]:
 				return True
 		return False
+
+
+	def add_songbook(self):
+		self.add_songbook_window = AddSongbookWindow()
+		self.add_songbook_window.show()
+
+		self.add_songbook_window.closeEvent = self.updateSongbooks
 	
+
+	def updateSongbooks(self, event):
+		with open("Songbooks/songbooks.json", "r") as json_file:
+			self.songbooks = json.load(json_file)
+	
+		self.songbook_names = list(self.songbooks.keys())
+		
+		self.ui.av_songbooks.currentTextChanged.disconnect(self.get_songs_from_songbook)
+		self.ui.av_songbooks.clear()
+		for s in self.songbook_names:
+			self.ui.av_songbooks.addItem(s)
+		self.ui.av_songbooks.currentTextChanged.connect(self.get_songs_from_songbook)
+
+		self.get_songs_from_songbook()
+
 
 	def new_song(self):
 		self.addsong = addSongWindow(self.ui.av_songbooks.currentText())
 		self.addsong.show()
 
+		self.addsong.closeEvent = self.updateSongList
 
-	def updateSongbooks(self, event):
-		with open("Songbooks/songbooks.json", "r") as json_file:
-			self.songbooks = json.load(json_file)
-		
-		self.songbook_names = list(self.songbooks.keys())
-		self.ui.av_songbooks.clear()
-		for s in self.songbook_names:
-			self.ui.av_songbooks.addItem(s)
 
+	def updateSongList(self, event):
 		self.get_songs_from_songbook()
+
+
+	def edit_song(self):
+		try:
+			self.editsong = EditSongWindow(self.ui.av_songbooks.currentText(), self.song.title)
+			self.editsong.show()
+
+			self.editsong.closeEvent = self.updateSongList
+		except Exception as error:
+			print(error)
+			msg = QMessageBox()
+			msg.setIcon(QMessageBox.Warning)
+			msg.setWindowTitle("Error")
+			msg.setText("You have to select song that you want to edit!")	
+			msg.exec_()
 
 
 	def set_bible(self):
@@ -475,7 +557,13 @@ class ScreenShower(QMainWindow):
 
 
 	def get_songs_from_songbook(self):
-		try:
+		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.getWords)
+		except: pass
+
+		try: self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+		except: pass
+
+		if self.ui.av_songbooks.currentText():
 			self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[self.ui.av_songbooks.currentText()]["filename"]}')
 			self.cursor = self.connection.cursor()
 			song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
@@ -485,10 +573,90 @@ class ScreenShower(QMainWindow):
 			for i in song_names:
 				self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
 
-			self.searchSong()
+			self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
+			self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+
+
+	def getWords(self):
+		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.getWords)
+		except: pass
+		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+
+		text_l = self.ui.list_songs.currentItem().text().split()
+		text_l.pop(0)
+		
+		song_title = ""
+		for t in text_l:
+			song_title += t + " "
+		song_title = song_title.strip()
+
+		self.song = Song(self.songbooks[self.ui.av_songbooks.currentText()]["filename"], song_title)
+		song_couplets = self.song.getCouplets()
+		song_chour = self.song.getChour()
+
+		self.ui.list_words.clear()
+		
+		self.song_list_parts = []
+		self.song_list_lines = []
+		for i in song_couplets:
+			self.song_list_parts.append(i)
+			if song_chour != "":
+				self.song_list_parts.append(song_chour)
+		
+		if self.anyStreamMode:
+			for part in range(len(self.song_list_parts)):
+				for line in self.song_list_parts[part].split("\n"):
+					self.song_list_lines.append(line + " " + str(part))
+
+			for line in self.song_list_lines:
+				self.ui.list_words.addItem(line[:-2])
+		elif not self.anyStreamMode:
+			self.ui.list_words.addItems(self.song_list_parts)
+		
+		self.ui.list_words.setCurrentRow(0)
+
+		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
+
+
+	def searchSong(self):
+		def checkIn(text1, text2):
+			def makeUniversalText(text):
+				text = text.lower()
+				unnecessarySymbols = [",", ".", "!", ";", "\n"]
+				for sym in unnecessarySymbols:
+					text = text.replace(sym, "")
+				text = text.replace(" –", "")
+
+				return text
+
+			text1 = makeUniversalText(text1)
+			text2 = makeUniversalText(text2)
+
+			if text2 in text1:
+				return True 
+			return False
+
+		songs = self.cursor.execute("SELECT * FROM Songs").fetchall()
+		res = []
+		
+		req = self.ui.song_search.text()
+		if req.isdigit():
+			req = int(req)
+			res = self.cursor.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()
+		else:
+			for song in songs: 
+				if checkIn(song[2], req):
+					res.append(song)
+		
+		self.ui.list_songs.clear()
+		for i in res:
+			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
+
+		try:
+			self.ui.list_songs.setCurrentRow(0)
 		except:
 			pass
-		self.hide_text()
 
 	
 	def closeEvent(self, event):
@@ -665,88 +833,6 @@ class ScreenShower(QMainWindow):
 				self.screens[s].label_info.setFont(f)
 
 	
-	def searchSong(self):
-		def checkIn(text1, text2):
-			def makeUniversalText(text):
-				text = text.lower()
-				unnecessarySymbols = [",", ".", "!", ";", "\n"]
-				for sym in unnecessarySymbols:
-					text = text.replace(sym, "")
-				text = text.replace(" –", "")
-
-				return text
-
-			text1 = makeUniversalText(text1)
-			text2 = makeUniversalText(text2)
-
-			if text2 in text1:
-				return True 
-			return False
-
-		songs = self.cursor.execute("SELECT * FROM Songs").fetchall()
-		res = []
-		
-		req = self.ui.song_search.text()
-		if req.isdigit():
-			req = int(req)
-			res = self.cursor.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()
-		else:
-			for song in songs: 
-				if checkIn(song[2], req):
-					res.append(song)
-		
-		self.ui.list_songs.clear()
-		for i in res:
-			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
-
-		try:
-			self.ui.list_songs.setCurrentRow(0)
-		except:
-			pass
-	
-
-	def getWords(self):
-		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
-
-		text_l = self.ui.list_songs.currentItem().text().split()
-		text_l.pop(0)
-		
-		song_title = ""
-		for t in text_l:
-			song_title += t + " "
-		song_title = song_title.strip()
-
-		song = Song(self.songbooks[self.ui.av_songbooks.currentText()]["filename"], song_title)
-		song_couplets = song.getCouplets()
-		song_chour = song.getChour()
-
-		self.ui.list_words.clear()
-		
-		self.song_list_parts = []
-		self.song_list_lines = []
-		for i in song_couplets:
-			self.song_list_parts.append(i)
-			if song_chour != "":
-				self.song_list_parts.append(song_chour)
-		
-		if self.anyStreamMode:
-			for part in range(len(self.song_list_parts)):
-				for line in self.song_list_parts[part].split("\n"):
-					self.song_list_lines.append(line + " " + str(part))
-
-			for line in self.song_list_lines:
-				self.ui.list_words.addItem(line[:-2])
-		elif not self.anyStreamMode:
-			self.ui.list_words.addItems(self.song_list_parts)
-		
-		self.ui.list_words.setCurrentRow(0)
-		self.ui.list_words.scrollToItem(self.ui.list_words.currentItem())
-
-		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
-
-		# self.hide_text()
-
-
 	def list_to_bible_place(self, l):
 		res = ""
 		for i in range(len(l)):
@@ -762,9 +848,11 @@ class ScreenShower(QMainWindow):
 	def open_window(self):
 		self.screens = []
 
+		# self.ui.screensCB.clear()
 		count_of_screens = QDesktopWidget().screenCount()
 		for i in range(count_of_screens):
 			self.screens.append(WordsWindow(i))
+			# self.ui.screensCB.addItem(str(i))
 	
 	
 	def close_window(self):
@@ -894,7 +982,7 @@ class ScreenShower(QMainWindow):
 		else:
 			self.open_window()
 			self.hide_text()
-			self.getWords()
+			# self.getWords()
 
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 		
@@ -903,6 +991,11 @@ class ScreenShower(QMainWindow):
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
+
+		if settings[screen]["show_words"]:
+			self.open_window()
+		else:
+			self.close_window()
 
 		if settings[screen]["stream_mode"]:
 			self.ui.settings_mode_tabs.setCurrentIndex(1)

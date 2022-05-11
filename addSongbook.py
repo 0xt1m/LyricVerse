@@ -1,10 +1,11 @@
 import sys, os
+import sqlite3
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QMessageBox, QLineEdit
 from PyQt5.QtCore import Qt, QUrl, QFileInfo
 from PyQt5.QtGui import QFont
 
-from SPSongsImporter import importSongsFromSP
+from SPSongsImporter import importSongsFromSP, addSongbookToJson
 
 class FileLabel(QLabel):
 	def __init__(self, parent=None):
@@ -112,8 +113,19 @@ class AddSongbookWindow(QMainWindow):
 			msg.setText("Songbook must to have any title")	
 			msg.exec_()
 		elif self.file.text() == "Drag the file here":
-			msg.setText("Songbook must to have any file")	
-			msg.exec_()
+			filename = self.songbook_title_input.text().strip() + ".db"
+			connection = sqlite3.connect("Songbooks/" + filename)
+			cursor = connection.cursor()
+
+			try:
+				cursor.execute("DROP TABLE Songs;")
+			except:
+				pass
+			cursor.execute('CREATE TABLE Songs (id INTEGER NOT NULL, title TEXT NOT NULL, song_text TEXT NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
+
+			connection.commit()
+			addSongbookToJson(filename, self.songbook_title_input.text().strip())
+			self.close()
 		else:
 			importSongsFromSP(self.file.text(), self.songbook_title_input.text().strip())
 			self.close()

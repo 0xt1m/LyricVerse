@@ -49,7 +49,7 @@ def importSongsFromSP(filename, title):
 		cursor.execute("DROP TABLE Songs;")
 	except:
 		pass
-	cursor.execute("CREATE TABLE Songs (id INTEGER NOT NULL, title TEXT NOT NULL, song_text TEXT NOT NULL);")
+	cursor.execute('CREATE TABLE Songs (id INTEGER NOT NULL, title TEXT NOT NULL, song_text TEXT NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
 
 	# Remove duplicates from these songs
 	all_songs = remove_duplicates(all_songs)
