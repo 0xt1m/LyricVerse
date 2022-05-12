@@ -272,7 +272,12 @@ class EditSongWindow(QMainWindow):
 	def init_ui(self):
 		self.resize(330, 540)
 
-		self.song = Song(self.songbook + ".db", self.title)
+		with open("Songbooks/songbooks.json", "r") as jsonfile:
+			songbooks = json.load(jsonfile)
+
+		filename = songbooks[self.songbook]["filename"]
+
+		self.song = Song(filename, self.title)
 
 		self.song_title_input = QtWidgets.QLineEdit(self)
 		self.song_title_input.setGeometry(10, 10, 310, 20)
@@ -427,6 +432,7 @@ class ScreenShower(QMainWindow):
 
 	def updateSongList(self, event):
 		self.get_songs_from_songbook()
+		self.searchSong()
 
 
 	def edit_song(self):
@@ -982,7 +988,7 @@ class ScreenShower(QMainWindow):
 		else:
 			self.open_window()
 			self.hide_text()
-			# self.getWords()
+			self.getWords()
 
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 		
