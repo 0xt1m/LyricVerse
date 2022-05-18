@@ -4,59 +4,19 @@ from design import Ui_MainWindow
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, QUrl, QFileInfo
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect, QFileDialog, QMessageBox
-from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics
+from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics, QColor
 
 from addSongbook import AddSongbookWindow
+from addSongWindow import Ui_addSongWindow
 from mybible_handler import Mybible
+from Song import Song
 
 import sqlite3
 import json
 
 import sys
 import time
-
-
-class Song:
-	def __init__(self, songbook, song_title):
-		db = sqlite3.connect(f"Songbooks/{songbook}")
-		self.sql = db.cursor()
-		self.song = self.sql.execute(f"SELECT * FROM Songs WHERE title='{song_title}'").fetchall()
-		self.id = self.song[0][0]
-		self.title = song_title
-		self.song_text = self.song[0][2]
-		song_text_lines = self.song_text.split("\n")
-		self.song_list = []
-		part_of_song = ""
-		for t in range(0, len(song_text_lines)):
-			if "куплет" in song_text_lines[t].lower() or "приспів" in song_text_lines[t].lower() or "припев" in song_text_lines[t].lower():
-				if t != 0:
-					self.song_list.append(part_of_song)
-					part_of_song = ""
-			part_of_song += song_text_lines[t] + "\n"
-		self.song_list.append(part_of_song.strip())
-
-
-	def getCouplets(self):
-		couplets = []
-		for c in self.song_list:
-			c_0 = c.split("\n")[0].lower()
-			if "куплет" in c_0:
-				c = c.split("\n")[1:]
-				c = "\n".join(c)
-				couplets.append(c.strip())
-
-		return couplets
-
-	def getChour(self):
-		chour = ""
-		for c in self.song_list:
-			c_0 = c.split("\n")[0].lower()
-			if "приспів" in c_0 or "припев" in c_0:
-				c = c.split("\n")[1:]
-				c = "\n".join(c)
-				chour = c.strip()
-
-		return chour
+import string
 
 
 class smartLabel(QtWidgets.QLabel):
@@ -94,6 +54,24 @@ class smartLabel(QtWidgets.QLabel):
 			current_height = one_line_height * count_of_lines
 			
 		self.setText(ready_text.strip())
+
+
+class songItem(QtWidgets.QListWidgetItem):
+	def __init__(self, text, type_of_item):
+		super().__init__()
+
+		self.type_of_item = type_of_item
+		self.text = text
+
+		self.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEditable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+		self.setText(text)
+
+		if type_of_item == "couplet":
+			self.setBackground(QColor(228, 235, 30))
+		elif type_of_item == "chour":
+			self.setBackground(QColor(98, 134, 227))
+		elif type_of_item == "bridge":
+			self.setBackground(QColor(219, 66, 66))
 
 
 class WordsWindow(QMainWindow):
@@ -207,58 +185,165 @@ class WordsWindow(QMainWindow):
 class addSongWindow(QMainWindow):
 	def __init__(self, songbook):
 		super().__init__()
-
-		self.songbook = songbook
+		self.ui = Ui_addSongWindow()
+		self.ui.setupUi(self)
 		self.init_ui()
+		self.songbook = songbook
 
 	def init_ui(self):
-		self.resize(330, 540)
-		self.song_title = QtWidgets.QLineEdit(self)
-		self.song_title.setGeometry(10, 10, 310, 20)
-		self.song_title.setObjectName("lineEdit")
-		self.song_text = QtWidgets.QPlainTextEdit(self)
-		self.song_text.setGeometry(10, 35, 310, 450)
-		self.song_text.setObjectName("plainTextEdit")
-		self.add_song_btn = QtWidgets.QPushButton(self)
-		self.add_song_btn.setGeometry(10, 490, 310, 40)
-		self.add_song_btn.setObjectName("pushButton")
+		self.ui.song_list.setSpacing(2)
+		self.ui.add_couplet_btn.clicked.connect(self.add_couplet)
+		self.ui.add_chour_btn.clicked.connect(self.add_chour)
+		self.ui.add_bridge_btn.clicked.connect(self.add_bridge)
+		self.ui.remove_item_btn.clicked.connect(self.remove_item)
 
-		self.setWindowTitle("New song")
-		self.song_title.setPlaceholderText("Enter song title")
-		self.song_text.setPlaceholderText("Enter song text")
-		self.add_song_btn.setText("Add")
-
-		self.add_song_btn.clicked.connect(self.add_song)
+		self.chour = ""
+		self.couplets = []
+		self.bridges = []
 
 
-	def add_song(self):
-		with open("Songbooks/songbooks.json", "r") as jsonfile:
-			songbooks = json.load(jsonfile)
+	def add_couplet(self):
+		couplet_text = self.ui.text_input.toPlainText()
+		if couplet_text.strip():
+			self.ui.song_list.addItem(songItem(couplet_text, "couplet"))
+			self.ui.text_input.clear()
 
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
 
-		filename = songbooks[self.songbook]["filename"]
+	def add_chour(self):
+		chour_text = self.ui.text_input.toPlainText()
+		if chour_text.strip():
+			self.ui.song_list.addItem(songItem(chour_text, "chour"))
+			self.ui.text_input.clear()
+
+
+	def add_bridge(self):
+		bridge_text = self.ui.text_input.toPlainText()
+		if bridge_text.strip():
+			self.ui.song_list.addItem(songItem(bridge_text, "bridge"))
+			self.ui.text_input.clear()
+
+
+	def remove_item(self):
+		current_item_index = self.ui.song_list.currentRow()
+		if current_item_index != -1:
+			self.ui.song_list.takeItem(current_item_index)
+
+
+
+
+
+
+# class addSongWindow(QMainWindow):
+# 	def __init__(self, songbook):
+# 		super().__init__()
+
+# 		self.songbook = songbook
+# 		self.init_ui()
+
+# 	def init_ui(self):
+# 		self.resize(330, 540)
+# 		self.song_title = QtWidgets.QLineEdit(self)
+# 		self.song_title.setGeometry(10, 10, 310, 20)
+# 		self.song_title.setObjectName("lineEdit")
 		
-		song_title = self.song_title.text()
-		song_text = self.song_text.toPlainText()
-		if not song_title:
-			msg.setText("Song must to have title!")	
-			msg.exec_()
-		elif not song_text:
-			msg.setText("Song must to have text!")	
-			msg.exec_()
-		else:
-			connection = sqlite3.connect(f"Songbooks/{filename}")
-			cursor = connection.cursor()
-			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
-			connection.commit()
-			self.song_title.setText("")
-			self.song_text.clear()
-			self.close()
-			# print(song_title)
-			# print(song_text)
+# 		self.add_couplet_btn = QtWidgets.QPushButton(self)
+# 		self.add_couplet_btn.setGeometry(QtCore.QRect(5, 40, 75, 23))
+# 		self.add_chour_btn = QtWidgets.QPushButton(self)
+# 		self.add_chour_btn.setGeometry(QtCore.QRect(85, 40, 75, 23))
+# 		self.add_bridge_btn = QtWidgets.QPushButton(self)
+# 		self.add_bridge_btn.setGeometry(QtCore.QRect(165, 40, 75, 23))
+# 		self.remove_item_btn = QtWidgets.QPushButton(self)
+# 		self.remove_item_btn.setGeometry(QtCore.QRect(245, 40, 75, 23))
+# 		self.repeat_chour_cb = QtWidgets.QCheckBox(self)
+# 		self.repeat_chour_cb.setGeometry(QtCore.QRect(10, 70, 91, 17))
+# 		self.repeat_chour_cb.setChecked(True)
+# 		self.label = QtWidgets.QLabel(self)
+# 		self.label.setGeometry(QtCore.QRect(10, 100, 47, 13))
+# 		self.song_list = QtWidgets.QListWidget(self)
+# 		self.song_list.setGeometry(QtCore.QRect(10, 120, 310, 401))
+# 		self.song_list.setSpacing(2)
+
+# 		self.add_couplet_btn.setText("add couplet")
+# 		self.add_chour_btn.setText("add chour")
+# 		self.add_bridge_btn.setText("add bridge")
+# 		self.repeat_chour_cb.setText("Repet chour")
+# 		self.remove_item_btn.setText("Remove item")
+# 		self.label.setText("Song")
+
+# 		self.add_couplet_btn.clicked.connect(self.add_couplet)
+# 		self.add_chour_btn.clicked.connect(self.add_chour)
+# 		self.add_bridge_btn.clicked.connect(self.add_bridge)
+# 		self.remove_item_btn.clicked.connect(self.remove_item)
+
+
+# 		self.add_song_btn = QtWidgets.QPushButton(self)
+# 		self.add_song_btn.setGeometry(10, 490, 310, 40)
+# 		self.add_song_btn.setObjectName("pushButton")
+
+# 		self.setWindowTitle("New song")
+# 		self.song_title.setPlaceholderText("Enter song title")
+# 		self.add_song_btn.setText("Add")
+
+# 		self.add_song_btn.clicked.connect(self.add_song)
+
+
+# 	def add_couplet(self):
+# 		item = QtWidgets.QListWidgetItem()
+# 		item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEditable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+# 		item.setText("new item")
+# 		item.setBackground(QColor(228, 235, 30))
+# 		self.song_list.addItem(item)
+
+
+# 	def add_chour(self):
+# 		item = QtWidgets.QListWidgetItem()
+# 		item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEditable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+# 		item.setText("new item")
+# 		item.setBackground(QColor(98, 134, 227))
+# 		self.song_list.addItem(item)
+
+
+# 	def add_bridge(self):
+# 		item = QtWidgets.QListWidgetItem()
+# 		item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEditable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+# 		item.setText("new item")
+# 		item.setBackground(QColor(219, 66, 66))
+# 		item.setTextColor(QColor("white"))
+# 		self.song_list.addItem(item)
+
+
+# 	def remove_item(self):
+# 		current_item_index = self.song_list.currentRow()
+# 		if current_item_index != -1:
+# 			self.song_list.takeItem(current_item_index)
+
+
+# 	def add_song(self):
+# 		with open("Songbooks/songbooks.json", "r") as jsonfile:
+# 			songbooks = json.load(jsonfile)
+
+# 		msg = QMessageBox()
+# 		msg.setIcon(QMessageBox.Warning)
+# 		msg.setWindowTitle("Error")
+
+# 		filename = songbooks[self.songbook]["filename"]
+		
+# 		song_title = self.song_title.text()
+# 		song_text = self.song_text.toPlainText()
+# 		if not song_title:
+# 			msg.setText("Song must to have title!")	
+# 			msg.exec_()
+# 		elif not song_text:
+# 			msg.setText("Song must to have text!")	
+# 			msg.exec_()
+# 		else:
+# 			connection = sqlite3.connect(f"Songbooks/{filename}")
+# 			cursor = connection.cursor()
+# 			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
+# 			connection.commit()
+# 			self.song_title.setText("")
+# 			self.song_text.clear()
+# 			self.close()
 
 
 class EditSongWindow(QMainWindow):
@@ -338,6 +423,7 @@ class ScreenShower(QMainWindow):
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+		self.ui.list_words.setWordWrap(True)
 		self.ui.list_words.itemPressed.connect(self.showSong)
 		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
@@ -583,6 +669,18 @@ class ScreenShower(QMainWindow):
 			self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 
 
+	def getSong(self, song_title):
+		filename = self.songbooks[self.ui.av_songbooks.currentText()]["filename"]
+		db = sqlite3.connect(f"Songbooks/{filename}")
+		sql = db.cursor()
+		song = sql.execute(f"SELECT * FROM Songs WHERE title='{song_title}'").fetchall()
+		number = song[0][0]
+		title = song_title
+		song_text = song[0][2]
+
+		return Song(number, title, song_text)
+
+	
 	def getWords(self):
 		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.getWords)
 		except: pass
@@ -596,9 +694,10 @@ class ScreenShower(QMainWindow):
 			song_title += t + " "
 		song_title = song_title.strip()
 
-		self.song = Song(self.songbooks[self.ui.av_songbooks.currentText()]["filename"], song_title)
-		song_couplets = self.song.getCouplets()
-		song_chour = self.song.getChour()
+		song = self.getSong(song_title)
+		song_text = json.loads(song.song_text)
+		song_couplets = song_text["Couplets"]
+		song_chour = song_text["Chour"]
 
 		self.ui.list_words.clear()
 		
@@ -636,6 +735,7 @@ class ScreenShower(QMainWindow):
 
 				return text
 
+			
 			text1 = makeUniversalText(text1)
 			text2 = makeUniversalText(text2)
 
@@ -651,9 +751,14 @@ class ScreenShower(QMainWindow):
 			req = int(req)
 			res = self.cursor.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()
 		else:
-			for song in songs: 
-				if checkIn(song[2], req):
-					res.append(song)
+			for s in songs: 
+				song_text_json = json.loads(s[2])
+				song_text = ""
+				for c in song_text_json["Couplets"]:
+					song_text += c + "\n\n"
+				song_text += song_text_json["Chour"]
+				if checkIn(song_text, req):
+					res.append(s)
 		
 		self.ui.list_songs.clear()
 		for i in res:

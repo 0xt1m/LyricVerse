@@ -55,7 +55,7 @@
         }
     },
     "screen_1": {
-        "show_words": true,
+        "show_words": false,
         "stream_mode": false,
         "simple_mode_settings": {
             "font_size": 120,

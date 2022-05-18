@@ -1,6 +1,8 @@
 import sqlite3
 import json
 
+from Song import Song
+
 
 # Function for add or change records in json songbooks
 def addSongbookToJson(filename, title="Songbook"):
@@ -56,13 +58,15 @@ def importSongsFromSP(filename, title):
 
 	# Append songs to new database
 	for song in range(len(all_songs)):
-		cursor.execute('INSERT INTO Songs (id, title, song_text) VALUES (?, ?, ?);', (all_songs[song][0], all_songs[song][1], all_songs[song][6]))
+		song = Song(all_songs[song][0], all_songs[song][1], all_songs[song][6])
+		song.reformat_text_to_json(repeat_chour=True)
+		cursor.execute('INSERT INTO Songs (id, title, song_text) VALUES (?, ?, ?);', (song.number, song.title, song.song_text))
 
 	connection.commit()
 	addSongbookToJson(filename.replace("sps", "db"), title)
 		
 
-# importSongsFromSP("EvPisni.sps")
+importSongsFromSP("EvPisni.sps", "ЄвПісні")
 
 
 
