@@ -63,7 +63,6 @@ class songItem(QtWidgets.QListWidgetItem):
 		self.type_of_item = type_of_item
 		self.text = text
 
-		self.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEditable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
 		self.setText(text)
 
 		if type_of_item == "couplet":
@@ -205,20 +204,28 @@ class addSongWindow(QMainWindow):
 	def add_couplet(self):
 		couplet_text = self.ui.text_input.toPlainText()
 		if couplet_text.strip():
+			self.couplets.append(couplet_text)
+
 			self.ui.song_list.addItem(songItem(couplet_text, "couplet"))
 			self.ui.text_input.clear()
 
 
 	def add_chour(self):
 		chour_text = self.ui.text_input.toPlainText()
-		if chour_text.strip():
+		if chour_text.strip() and not self.chour:
+			self.chour = chour_text
+
 			self.ui.song_list.addItem(songItem(chour_text, "chour"))
 			self.ui.text_input.clear()
+		elif self.chour:
+			print("Chour is already exists")
 
 
 	def add_bridge(self):
 		bridge_text = self.ui.text_input.toPlainText()
 		if bridge_text.strip():
+			self.bridges.append(bridge_text)
+
 			self.ui.song_list.addItem(songItem(bridge_text, "bridge"))
 			self.ui.text_input.clear()
 
