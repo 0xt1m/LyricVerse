@@ -2,9 +2,13 @@ from design import Ui_MainWindow
 # from words_window import Ui_WordsWindow
 
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import Qt, QUrl, QFileInfo
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect, QFileDialog, QMessageBox
-from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics, QColor
+# from PyQt5.QtCore import Qt, QUrl, QFileInfo
+# from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QTableWidgetItem, QShortcut, QWidget, QGraphicsDropShadowEffect, QFileDialog, QMessageBox
+# from PyQt5.QtGui import QTransform, QKeySequence, QFont, QFontMetrics, QColor
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from addSongbook import AddSongbookWindow
 from addSongWindow import Ui_addSongWindow
@@ -20,7 +24,41 @@ import string
 
 
 
+class CustomWidget(QWidget):
+	def __init__(self):
+		super().__init__()
 
+		self.setObjectName("customWidget")
+		self.textQVBoxLayout = QVBoxLayout()
+		self.textUp = QLabel()
+		self.textDown = QLabel()
+		self.textQVBoxLayout.addWidget(self.textUp)
+		self.textQVBoxLayout.addWidget(self.textDown)
+
+		self.allQHBoxLayout = QHBoxLayout()
+		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
+
+		self.setLayout(self.allQHBoxLayout)
+
+		self.textUp.setStyleSheet('''
+			color: rgb(0, 0, 255);
+		''')
+		self.textDown.setStyleSheet('''
+			color: rgb(255, 0, 0);
+		''')
+
+		self.setStyleSheet("""
+		#customWidget:selected {
+			color: white;
+			background-color: black;
+		}
+		""")
+
+	def setTextUp(self, text):
+		self.textUp.setText(text)
+
+	def setTextDown(self, text):
+		self.textDown.setText(text)
 
 
 class smartLabel(QtWidgets.QLabel):
@@ -202,29 +240,23 @@ class AddSongWindow(QMainWindow):
 		self.ui.add_bridge_btn.clicked.connect(self.add_bridge)
 		self.ui.remove_item_btn.clicked.connect(self.remove_item)
 
-		styles = """
-		::item:selected {
-			color: red;
-			background: transparent;
-			border: 0;
-		}
-		::item:hover {
-			background: transparent;
-		}
-		"""
-		self.ui.song_list.setStyleSheet(styles)
-
 		self.chour = ""
 		self.couplets = []
 		self.bridges = []
 
 
 	def add_couplet(self):
-		custom_widget = CustomQWdiget()
-		custom_widget.setTextUp("bla bla")
-		custom_widget.setTextDown("222")
+		couplet_text = self.ui.text_input.toPlainText().strip()
+		if couplet_text:
+			custom_item = CustomWidget()
+			custom_item.setTextUp("Куплет")
+			custom_item.setTextDown(couplet_text)
 
-		self.ui.song_list.addItem(custom_widget)
+			simple_item = QListWidgetItem(self.ui.song_list)
+			simple_item.setSizeHint(custom_item.sizeHint())
+
+			self.ui.song_list.addItem(simple_item)
+			self.ui.song_list.setItemWidget(simple_item, custom_item)
 
 		# couplet_text = self.ui.text_input.toPlainText().strip()
 		# if couplet_text:
@@ -573,8 +605,8 @@ class ScreenShower(QMainWindow):
 
 
 	def new_song(self):
-		# self.addsong = AddSongWindow(self.ui.av_songbooks.currentText())
-		self.addsong = exampleQMainWindow()
+		self.addsong = AddSongWindow(self.ui.av_songbooks.currentText())
+		# self.addsong = exampleQMainWindow()
 		self.addsong.show()
 
 		self.addsong.closeEvent = self.updateSongList
