@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>New Song</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QLineEdit" name="song_title">
     <property name="geometry">
@@ -84,6 +87,26 @@
     <property name="uniformItemSizes">
      <bool>false</bool>
     </property>
+    <item>
+     <property name="text">
+      <string>New Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>New Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>New Item</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>New Item</string>
+     </property>
+    </item>
    </widget>
    <widget class="QPlainTextEdit" name="text_input">
     <property name="geometry">

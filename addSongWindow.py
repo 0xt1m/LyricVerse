@@ -15,6 +15,10 @@ class Ui_addSongWindow(object):
     def setupUi(self, addSongWindow):
         addSongWindow.setObjectName("addSongWindow")
         addSongWindow.resize(738, 540)
+        addSongWindow.setStyleSheet(".song_list::item:selected {\n"
+"    background-color: black;\n"
+"    color: white;\n"
+"}")
         self.centralwidget = QtWidgets.QWidget(addSongWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.song_title = QtWidgets.QLineEdit(self.centralwidget)
