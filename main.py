@@ -57,16 +57,18 @@ class smartLabel(QtWidgets.QLabel):
 
 
 class songItem(QtWidgets.QListWidgetItem):
-	def __init__(self, text, type_of_item):
+	def __init__(self, text, type_of_item, index=None):
 		super().__init__()
 
 		self.type_of_item = type_of_item
 		self.text = text
+		self.index = index
 
 		self.setText(text)
 
 		if type_of_item == "couplet":
 			self.setBackground(QColor(228, 235, 30))
+			self.setForeground(QColor(0, 0, 0))
 		elif type_of_item == "chour":
 			self.setBackground(QColor(98, 134, 227))
 		elif type_of_item == "bridge":
@@ -181,7 +183,7 @@ class WordsWindow(QMainWindow):
 			self.label_info.setGraphicsEffect(shadow)
 
 
-class addSongWindow(QMainWindow):
+class AddSongWindow(QMainWindow):
 	def __init__(self, songbook):
 		super().__init__()
 		self.ui = Ui_addSongWindow()
@@ -202,38 +204,72 @@ class addSongWindow(QMainWindow):
 
 
 	def add_couplet(self):
-		couplet_text = self.ui.text_input.toPlainText()
-		if couplet_text.strip():
+		couplet_text = self.ui.text_input.toPlainText().strip()
+		if couplet_text:
+			self.ui.song_list.addItem(songItem(couplet_text, "couplet", len(self.couplets)))
+			self.ui.text_input.clear()
 			self.couplets.append(couplet_text)
 
-			self.ui.song_list.addItem(songItem(couplet_text, "couplet"))
-			self.ui.text_input.clear()
+			if self.chour:
+				self.ui.song_list.addItem(songItem(self.chour, "chour"))
 
 
 	def add_chour(self):
-		chour_text = self.ui.text_input.toPlainText()
-		if chour_text.strip() and not self.chour:
-			self.chour = chour_text
-
-			self.ui.song_list.addItem(songItem(chour_text, "chour"))
+		chour_text = self.ui.text_input.toPlainText().strip()
+		if chour_text and not self.chour:
+			couplet_indeces = []
+			for x in range(self.ui.song_list.count()):
+				x_item = self.ui.song_list.item(x)
+				if x_item.type_of_item == "couplet": couplet_indeces.append(x)
+			
+			for i in range(len(couplet_indeces)-1, -1, -1):
+				self.ui.song_list.insertItem(couplet_indeces[i]+1, songItem(chour_text, "chour"))
 			self.ui.text_input.clear()
+			self.chour = chour_text
 		elif self.chour:
 			print("Chour is already exists")
 
 
 	def add_bridge(self):
-		bridge_text = self.ui.text_input.toPlainText()
-		if bridge_text.strip():
-			self.bridges.append(bridge_text)
-
-			self.ui.song_list.addItem(songItem(bridge_text, "bridge"))
+		bridge_text = self.ui.text_input.toPlainText().strip()
+		if bridge_text:
+			self.ui.song_list.addItem(songItem(bridge_text, "bridge", len(self.bridges)))
 			self.ui.text_input.clear()
+			self.bridges.append(bridge_text)
 
 
 	def remove_item(self):
 		current_item_index = self.ui.song_list.currentRow()
 		if current_item_index != -1:
-			self.ui.song_list.takeItem(current_item_index)
+			item = self.ui.song_list.item(current_item_index)
+			if item.type_of_item == "chour":
+				self.chour = ""
+				chour_indeces = []
+				for x in range(self.ui.song_list.count()):
+					x_item = self.ui.song_list.item(x)
+					if x_item.type_of_item == "chour": 
+						chour_indeces.append(x)
+				for i in range(len(chour_indeces)-1, -1, -1):
+					self.ui.song_list.takeItem(chour_indeces[i])	
+					
+			elif item.type_of_item == "couplet":
+				self.couplets.pop(item.index)
+				for x in range(item.index+1, self.ui.song_list.count()):
+					x_item = self.ui.song_list.item(x)
+					if x_item.type_of_item == "couplet": 
+						x_item.index = x_item.index - 1
+				
+				self.ui.song_list.takeItem(current_item_index)
+				if self.chour:
+					self.ui.song_list.takeItem(current_item_index)
+			elif item.type_of_item == "bridge":
+				self.bridges.pop(item.index)
+				for x in range(item.index+1, self.ui.song_list.count()):
+					x_item = self.ui.song_list.item(x)
+					if x_item.type_of_item == "bridge": 
+						x_item.index = x_item.index - 1
+
+				self.ui.song_list.takeItem(current_item_index)
 
 
 
@@ -517,7 +553,7 @@ class ScreenShower(QMainWindow):
 
 
 	def new_song(self):
-		self.addsong = addSongWindow(self.ui.av_songbooks.currentText())
+		self.addsong = AddSongWindow(self.ui.av_songbooks.currentText())
 		self.addsong.show()
 
 		self.addsong.closeEvent = self.updateSongList
