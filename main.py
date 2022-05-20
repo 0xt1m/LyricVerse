@@ -23,45 +23,7 @@ import time
 import string
 
 
-
-class CustomWidget(QWidget):
-	def __init__(self):
-		super().__init__()
-
-		self.setObjectName("customWidget")
-		self.textQVBoxLayout = QVBoxLayout()
-		self.textUp = QLabel()
-		self.textDown = QLabel()
-		self.textQVBoxLayout.addWidget(self.textUp)
-		self.textQVBoxLayout.addWidget(self.textDown)
-
-		self.allQHBoxLayout = QHBoxLayout()
-		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
-
-		self.setLayout(self.allQHBoxLayout)
-
-		self.textUp.setStyleSheet('''
-			color: rgb(0, 0, 255);
-		''')
-		self.textDown.setStyleSheet('''
-			color: rgb(255, 0, 0);
-		''')
-
-		self.setStyleSheet("""
-		#customWidget:selected {
-			color: white;
-			background-color: black;
-		}
-		""")
-
-	def setTextUp(self, text):
-		self.textUp.setText(text)
-
-	def setTextDown(self, text):
-		self.textDown.setText(text)
-
-
-class smartLabel(QtWidgets.QLabel):
+class smartLabel(QLabel):
 	def __init__(self, screen):
 		super().__init__(screen)
 
@@ -206,7 +168,49 @@ class WordsWindow(QMainWindow):
 			self.label_info.setGraphicsEffect(shadow)
 
 
-class songItem(QtWidgets.QListWidgetItem):
+class CustomItem(QWidget):
+	def __init__(self, text, type_of_item, index=None):
+		super().__init__()
+
+		self.type_of_item = type_of_item
+		self.text = text
+		self.index = index
+
+		self.setObjectName("CustomItem")
+		self.textQVBoxLayout = QVBoxLayout()
+		self.textQVBoxLayout.setSpacing(0)
+		self.textUp = QLabel()
+		self.textDown = QLabel()
+		self.textDown.setObjectName("textDown")
+		self.textQVBoxLayout.addWidget(self.textUp)
+		self.textQVBoxLayout.addWidget(self.textDown)
+
+		self.textDown.setText(text)
+
+		self.allQHBoxLayout = QHBoxLayout()
+		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
+
+		if type_of_item == "couplet":
+			self.textUp.setText("Куплет") 
+
+		elif type_of_item == "chour":
+			self.textUp.setText("Приспів")
+		
+		elif type_of_item == "bridge":
+			self.textUp.setText("Брідж")
+
+
+		# self.setStyleSheet("""
+		# 	#song_list > #textDown { 
+		# 		color: pink; 
+		# 	}
+		# 	""")
+
+		self.setLayout(self.allQHBoxLayout)
+
+
+
+class SongItem(QtWidgets.QListWidgetItem):
 	def __init__(self, text, type_of_item, index=None):
 		super().__init__()
 
@@ -244,13 +248,23 @@ class AddSongWindow(QMainWindow):
 		self.couplets = []
 		self.bridges = []
 
+		self.ui.song_list.setStyleSheet("""
+			::item {
+				background-color: #1d85db;
+			}
+			::item:selected {
+				border: 2px solid black;
+			}
+			::item:selected > #textDown {
+				color: white;
+			}
+			""")
+
 
 	def add_couplet(self):
 		couplet_text = self.ui.text_input.toPlainText().strip()
 		if couplet_text:
-			custom_item = CustomWidget()
-			custom_item.setTextUp("Куплет")
-			custom_item.setTextDown(couplet_text)
+			custom_item = CustomItem(couplet_text, "couplet", len(self.couplets))
 
 			simple_item = QListWidgetItem(self.ui.song_list)
 			simple_item.setSizeHint(custom_item.sizeHint())
