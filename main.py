@@ -262,10 +262,37 @@ class AddSongWindow(QMainWindow):
 
 	def edit_song_item(self):
 		self.ui.save_item_btn.setEnabled(True)
+		current_item = self.ui.song_list.currentItem()
+		self.ui.text_input.clear()
+		self.ui.text_input.appendPlainText(current_item.text)
 
 
 	def save_song_item(self):
 		self.ui.save_item_btn.setEnabled(False)
+		current_text = self.ui.text_input.toPlainText()
+		current_item = self.ui.song_list.currentItem()
+		current_item.text = current_text
+
+		if current_item.type_of_item == "couplet":
+			custom_item = CustomItem(current_text, "couplet")
+			current_item.setSizeHint(custom_item.sizeHint())
+			self.ui.song_list.setItemWidget(current_item, custom_item)
+		elif current_item.type_of_item == "chour":
+			for x in range(self.ui.song_list.count()):
+				x_item = self.ui.song_list.item(x)
+				if x_item.type_of_item == "chour": 
+					custom_item = CustomItem(current_text, "chour")
+					current_item.setSizeHint(custom_item.sizeHint())
+					self.ui.song_list.setItemWidget(x_item, custom_item)
+					x_item.text = current_text
+		elif current_item.type_of_item == "bridge":
+			custom_item = CustomItem(current_text, "bridge")
+			current_item.setSizeHint(custom_item.sizeHint())
+			self.ui.song_list.setItemWidget(current_item, custom_item)
+
+		self.ui.text_input.clear()
+
+
 
 
 	def add_couplet(self):
@@ -314,7 +341,12 @@ class AddSongWindow(QMainWindow):
 	def add_bridge(self):
 		bridge_text = self.ui.text_input.toPlainText().strip()
 		if bridge_text:
-			self.ui.song_list.addItem(songItem(bridge_text, "bridge", len(self.bridges)))
+			custom_item = CustomItem(bridge_text, "bridge")
+			simple_item = SongItem(bridge_text, "bridge", len(self.bridges))
+			simple_item.setSizeHint(custom_item.sizeHint())
+			self.ui.song_list.addItem(simple_item)
+			self.ui.song_list.setItemWidget(simple_item, custom_item)
+			
 			self.ui.text_input.clear()
 			self.bridges.append(bridge_text)
 
