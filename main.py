@@ -238,6 +238,7 @@ class AddSongWindow(QMainWindow):
 		self.ui.remove_item_btn.clicked.connect(self.remove_item)
 		self.ui.song_list.itemDoubleClicked.connect(self.edit_song_item)
 		self.ui.save_item_btn.clicked.connect(self.save_song_item)
+		self.ui.add_song_btn.clicked.connect(self.add_song)
 
 		self.ui.save_item_btn.setEnabled(False)
 
@@ -300,6 +301,7 @@ class AddSongWindow(QMainWindow):
 		if couplet_text:
 			custom_item = CustomItem(couplet_text, "couplet")
 			simple_item = SongItem(couplet_text, "couplet", len(self.couplets))
+			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
 			simple_item.setSizeHint(custom_item.sizeHint())
 
 			self.ui.song_list.addItem(simple_item)
@@ -318,15 +320,15 @@ class AddSongWindow(QMainWindow):
 
 	def add_chour(self):
 		chour_text = self.ui.text_input.toPlainText().strip()
-		if chour_text and not self.chour and self.ui.song_list.count():
-			couplet_indeces = []
-			for x in range(self.ui.song_list.count()):
-				x_item = self.ui.song_list.item(x)
-				if x_item.type_of_item == "couplet": couplet_indeces.append(x)
-
+		couplet_indeces = []
+		for x in range(self.ui.song_list.count()):
+			x_item = self.ui.song_list.item(x)
+			if x_item.type_of_item == "couplet": couplet_indeces.append(x)
+		if chour_text and not self.chour and couplet_indeces:
 			for i in range(len(couplet_indeces)-1, -1, -1):
 				custom_item = CustomItem(chour_text, "chour")
 				chour_item = SongItem(chour_text, "chour")
+				chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
 				chour_item.setSizeHint(custom_item.sizeHint())
 				
 				self.ui.song_list.insertItem(couplet_indeces[i]+1, chour_item)
@@ -385,6 +387,45 @@ class AddSongWindow(QMainWindow):
 						x_item.index = x_item.index - 1
 
 				self.ui.song_list.takeItem(current_item_index)
+
+
+	def add_song(self):
+		with open("Songbooks/songbooks.json", "r") as jsonfile:
+			songbooks = json.load(jsonfile)
+
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setWindowTitle("Error")
+
+		filename = songbooks[self.songbook]["filename"]
+
+		song_title = self.ui.song_title.text()
+		song_text = self.ui.song_list.count()
+		if not song_title:
+			msg.setText("Song must to have title!")
+			msg.exec_()
+		elif not song_text:
+			msg.setText("Song must to have text!")
+			msg.exec_()
+		else:
+			couplets = []
+			chour = ""
+			bridges = []
+			for x in range(self.ui.song_list.count()):
+				x_item = self.ui.song_list.item(x)
+				if x_item.type_of_item == "couplet": couplets.append(x_item.text)
+				elif not chour and x_item.type_of_item == "chour": chour = x_item.text
+				elif x_item.type_of_item == "bridge": bridges.append({"text": x_item.text, "index": x})
+
+			print(bridges)
+
+			# connection = sqlite3.connect(f"Songbooks/{filename}")
+			# cursor = connection.cursor()
+			# cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
+			# connection.commit()
+			# self.song_title.setText("")
+			# self.song_text.clear()
+			# self.close()
 
 
 # class addSongWindow(QMainWindow):
