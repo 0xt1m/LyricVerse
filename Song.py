@@ -42,16 +42,17 @@ class Song:
 
 		return chour
 
-	def reformat_text_to_json(self, repeat_chour=True):
+	def reformat_text_to_json(self):
 		couplets = self.__getCouplets()
 		chour = self.__getChour()
 		Song = {
 			"Couplets": couplets,
 			"Chour": chour,
-			"repeat_chour": repeat_chour
+			"Bridges": []
 		}
 		song_json = json.dumps(Song, indent=4)
 		self.song_text = song_json
+
 
 
 # song = Song(44, "hello", text)

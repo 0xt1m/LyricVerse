@@ -400,11 +400,11 @@ class AddSongWindow(QMainWindow):
 		filename = songbooks[self.songbook]["filename"]
 
 		song_title = self.ui.song_title.text()
-		song_text = self.ui.song_list.count()
+		is_song_text = self.ui.song_list.count()
 		if not song_title:
 			msg.setText("Song must to have title!")
 			msg.exec_()
-		elif not song_text:
+		elif not is_song_text:
 			msg.setText("Song must to have text!")
 			msg.exec_()
 		else:
@@ -417,15 +417,20 @@ class AddSongWindow(QMainWindow):
 				elif not chour and x_item.type_of_item == "chour": chour = x_item.text
 				elif x_item.type_of_item == "bridge": bridges.append({"text": x_item.text, "index": x})
 
-			print(bridges)
+			
+			song_text = {
+				"Couplets": couplets,
+				"Chour": chour,
+				"Bridges": bridges
+			}
+			song_text = json.dumps(song_text, indent=4)
 
-			# connection = sqlite3.connect(f"Songbooks/{filename}")
-			# cursor = connection.cursor()
-			# cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
-			# connection.commit()
-			# self.song_title.setText("")
-			# self.song_text.clear()
-			# self.close()
+			connection = sqlite3.connect(f"Songbooks/{filename}")
+			cursor = connection.cursor()
+			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
+			connection.commit()
+			
+			self.close()
 
 
 # class addSongWindow(QMainWindow):

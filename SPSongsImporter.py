@@ -59,7 +59,7 @@ def importSongsFromSP(filename, title):
 	# Append songs to new database
 	for song in range(len(all_songs)):
 		song = Song(all_songs[song][0], all_songs[song][1], all_songs[song][6])
-		song.reformat_text_to_json(repeat_chour=True)
+		song.reformat_text_to_json()
 		cursor.execute('INSERT INTO Songs (id, title, song_text) VALUES (?, ?, ?);', (song.number, song.title, song.song_text))
 
 	connection.commit()
