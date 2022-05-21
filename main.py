@@ -169,17 +169,17 @@ class WordsWindow(QMainWindow):
 
 
 class CustomItem(QWidget):
-	def __init__(self, text, type_of_item, index=None):
+	def __init__(self, text, type_of_item):
 		super().__init__()
 
 		self.type_of_item = type_of_item
 		self.text = text
-		self.index = index
 
 		self.setObjectName("CustomItem")
 		self.textQVBoxLayout = QVBoxLayout()
 		self.textQVBoxLayout.setSpacing(0)
 		self.textUp = QLabel()
+		self.textUp.setObjectName("textUp")
 		self.textDown = QLabel()
 		self.textDown.setObjectName("textDown")
 		self.textQVBoxLayout.addWidget(self.textUp)
@@ -200,33 +200,26 @@ class CustomItem(QWidget):
 			self.textUp.setText("Брідж")
 
 
-		# self.setStyleSheet("""
-		# 	#song_list > #textDown { 
-		# 		color: pink; 
-		# 	}
-		# 	""")
+		self.setStyleSheet("""
+			#textUp {
+				color: #044c87;
+			}
+			#textDown {
+				color: black;
+			}
+			""")
 
 		self.setLayout(self.allQHBoxLayout)
 
 
 
-class SongItem(QtWidgets.QListWidgetItem):
+class SongItem(QListWidgetItem):
 	def __init__(self, text, type_of_item, index=None):
 		super().__init__()
 
 		self.type_of_item = type_of_item
 		self.text = text
 		self.index = index
-
-		self.setText(text)
-
-		if type_of_item == "couplet":
-			self.setBackground(QColor(228, 235, 30))
-			self.setForeground(QColor(0, 0, 0))
-		elif type_of_item == "chour":
-			self.setBackground(QColor(98, 134, 227))
-		elif type_of_item == "bridge":
-			self.setBackground(QColor(219, 66, 66))
 
 
 class AddSongWindow(QMainWindow):
@@ -243,59 +236,69 @@ class AddSongWindow(QMainWindow):
 		self.ui.add_chour_btn.clicked.connect(self.add_chour)
 		self.ui.add_bridge_btn.clicked.connect(self.add_bridge)
 		self.ui.remove_item_btn.clicked.connect(self.remove_item)
+		self.ui.song_list.itemSelectionChanged.connect(self.checkItem)
 
 		self.chour = ""
+		self.chour_item = None
+
 		self.couplets = []
 		self.bridges = []
 
 		self.ui.song_list.setStyleSheet("""
 			::item {
-				background-color: #1d85db;
+				background-color: white;
+				border: 4px solid black;
+				border-radius: 10px;
 			}
-			::item:selected {
-				border: 2px solid black;
-			}
-			::item:selected > #textDown {
-				color: white;
+			::item:selected{
+				border: 4px solid #c5cc04;
 			}
 			""")
+
+
+
+	def checkItem(self):
+		current_item = self.ui.song_list.currentItem()
+		print(current_item.text)
 
 
 	def add_couplet(self):
 		couplet_text = self.ui.text_input.toPlainText().strip()
 		if couplet_text:
-			custom_item = CustomItem(couplet_text, "couplet", len(self.couplets))
-
-			simple_item = QListWidgetItem(self.ui.song_list)
+			custom_item = CustomItem(couplet_text, "couplet")
+			simple_item = SongItem(couplet_text, "couplet", len(self.couplets))
 			simple_item.setSizeHint(custom_item.sizeHint())
 
 			self.ui.song_list.addItem(simple_item)
 			self.ui.song_list.setItemWidget(simple_item, custom_item)
+			
+			self.ui.text_input.clear()
+			self.couplets.append(couplet_text)
 
-		# couplet_text = self.ui.text_input.toPlainText().strip()
-		# if couplet_text:
-		# 	self.ui.song_list.addItem(songItem(couplet_text, "couplet", len(self.couplets)))
-		# 	self.ui.text_input.clear()
-		# 	self.couplets.append(couplet_text)
-
-		# 	if self.chour:
-		# 		self.ui.song_list.addItem(songItem(self.chour, "chour"))
+			if self.chour:
+				self.ui.song_list.addItem(CustomItem(self.chour, "chour"))
 
 
 	def add_chour(self):
 		chour_text = self.ui.text_input.toPlainText().strip()
-		if chour_text and not self.chour:
+		if chour_text and not self.chour and self.ui.song_list.count():
 			couplet_indeces = []
 			for x in range(self.ui.song_list.count()):
 				x_item = self.ui.song_list.item(x)
 				if x_item.type_of_item == "couplet": couplet_indeces.append(x)
 
 			for i in range(len(couplet_indeces)-1, -1, -1):
-				self.ui.song_list.insertItem(couplet_indeces[i]+1, songItem(chour_text, "chour"))
+				custom_item = CustomItem(chour_text, "chour")
+				chour_item = SongItem(chour_text, "chour")
+				chour_item.setSizeHint(custom_item.sizeHint())
+				
+				self.ui.song_list.insertItem(couplet_indeces[i]+1, chour_item)
+				self.ui.song_list.setItemWidget(chour_item, custom_item)
+
 			self.ui.text_input.clear()
 			self.chour = chour_text
-		elif self.chour:
-			print("Chour is already exists")
+		elif self.chour: print("Chour is already exists")
+		else: print("Add one couplet please")
 
 
 	def add_bridge(self):
