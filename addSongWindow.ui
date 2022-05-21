@@ -35,7 +35,7 @@
      <rect>
       <x>10</x>
       <y>320</y>
-      <width>75</width>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
@@ -46,9 +46,9 @@
    <widget class="QPushButton" name="add_chour_btn">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>320</y>
-      <width>75</width>
+      <x>120</x>
+      <y>350</y>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
@@ -59,9 +59,9 @@
    <widget class="QPushButton" name="add_bridge_btn">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>120</x>
       <y>320</y>
-      <width>75</width>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
@@ -87,26 +87,6 @@
     <property name="uniformItemSizes">
      <bool>false</bool>
     </property>
-    <item>
-     <property name="text">
-      <string>New Item</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>New Item</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>New Item</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>New Item</string>
-     </property>
-    </item>
    </widget>
    <widget class="QPlainTextEdit" name="text_input">
     <property name="geometry">
@@ -136,12 +116,25 @@
      <rect>
       <x>10</x>
       <y>350</y>
-      <width>75</width>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>remove item</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="save_item_btn">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>320</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>save</string>
     </property>
    </widget>
   </widget>

@@ -15,23 +15,20 @@ class Ui_addSongWindow(object):
     def setupUi(self, addSongWindow):
         addSongWindow.setObjectName("addSongWindow")
         addSongWindow.resize(738, 540)
-        addSongWindow.setStyleSheet(".song_list::item:selected {\n"
-"    background-color: black;\n"
-"    color: white;\n"
-"}")
+        addSongWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(addSongWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.song_title = QtWidgets.QLineEdit(self.centralwidget)
         self.song_title.setGeometry(QtCore.QRect(10, 10, 310, 20))
         self.song_title.setObjectName("song_title")
         self.add_couplet_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.add_couplet_btn.setGeometry(QtCore.QRect(10, 320, 75, 23))
+        self.add_couplet_btn.setGeometry(QtCore.QRect(10, 320, 111, 23))
         self.add_couplet_btn.setObjectName("add_couplet_btn")
         self.add_chour_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.add_chour_btn.setGeometry(QtCore.QRect(90, 320, 75, 23))
+        self.add_chour_btn.setGeometry(QtCore.QRect(120, 350, 111, 23))
         self.add_chour_btn.setObjectName("add_chour_btn")
         self.add_bridge_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.add_bridge_btn.setGeometry(QtCore.QRect(170, 320, 75, 23))
+        self.add_bridge_btn.setGeometry(QtCore.QRect(120, 320, 111, 23))
         self.add_bridge_btn.setObjectName("add_bridge_btn")
         self.song_list = QtWidgets.QListWidget(self.centralwidget)
         self.song_list.setGeometry(QtCore.QRect(330, 10, 401, 521))
@@ -46,8 +43,11 @@ class Ui_addSongWindow(object):
         self.add_song_btn.setGeometry(QtCore.QRect(80, 480, 141, 41))
         self.add_song_btn.setObjectName("add_song_btn")
         self.remove_item_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.remove_item_btn.setGeometry(QtCore.QRect(10, 350, 75, 23))
+        self.remove_item_btn.setGeometry(QtCore.QRect(10, 350, 111, 23))
         self.remove_item_btn.setObjectName("remove_item_btn")
+        self.save_item_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.save_item_btn.setGeometry(QtCore.QRect(230, 320, 75, 23))
+        self.save_item_btn.setObjectName("save_item_btn")
         addSongWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(addSongWindow)
@@ -62,6 +62,7 @@ class Ui_addSongWindow(object):
         self.add_bridge_btn.setText(_translate("addSongWindow", "add bridge"))
         self.add_song_btn.setText(_translate("addSongWindow", "Add song"))
         self.remove_item_btn.setText(_translate("addSongWindow", "remove item"))
+        self.save_item_btn.setText(_translate("addSongWindow", "save"))
 
 
 if __name__ == "__main__":
