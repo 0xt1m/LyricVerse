@@ -177,7 +177,7 @@ class CustomItem(QWidget):
 
 		self.setObjectName("CustomItem")
 		self.textQVBoxLayout = QVBoxLayout()
-		self.textQVBoxLayout.setSpacing(0)
+		self.textQVBoxLayout.setSpacing(7)
 		self.textUp = QLabel()
 		self.textUp.setObjectName("textUp")
 		self.textDown = QLabel()
@@ -191,11 +191,11 @@ class CustomItem(QWidget):
 		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
 
 		if type_of_item == "couplet":
-			self.textUp.setText("Куплет") 
+			self.textUp.setText("Куплет")
 
 		elif type_of_item == "chour":
 			self.textUp.setText("Приспів")
-		
+
 		elif type_of_item == "bridge":
 			self.textUp.setText("Брідж")
 
@@ -251,11 +251,11 @@ class AddSongWindow(QMainWindow):
 		self.ui.song_list.setStyleSheet("""
 			::item {
 				background-color: white;
-				border: 4px solid black;
+				border: 1px solid black;
 				border-radius: 10px;
 			}
 			::item:selected{
-				border: 4px solid #c5cc04;
+				border: 2px solid #c5cc04;
 			}
 			""")
 
@@ -281,7 +281,7 @@ class AddSongWindow(QMainWindow):
 		elif current_item.type_of_item == "chour":
 			for x in range(self.ui.song_list.count()):
 				x_item = self.ui.song_list.item(x)
-				if x_item.type_of_item == "chour": 
+				if x_item.type_of_item == "chour":
 					custom_item = CustomItem(current_text, "chour")
 					current_item.setSizeHint(custom_item.sizeHint())
 					self.ui.song_list.setItemWidget(x_item, custom_item)
@@ -306,7 +306,7 @@ class AddSongWindow(QMainWindow):
 
 			self.ui.song_list.addItem(simple_item)
 			self.ui.song_list.setItemWidget(simple_item, custom_item)
-			
+
 			self.ui.text_input.clear()
 			self.couplets.append(couplet_text)
 
@@ -330,7 +330,7 @@ class AddSongWindow(QMainWindow):
 				chour_item = SongItem(chour_text, "chour")
 				chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
 				chour_item.setSizeHint(custom_item.sizeHint())
-				
+
 				self.ui.song_list.insertItem(couplet_indeces[i]+1, chour_item)
 				self.ui.song_list.setItemWidget(chour_item, custom_item)
 
@@ -348,7 +348,7 @@ class AddSongWindow(QMainWindow):
 			simple_item.setSizeHint(custom_item.sizeHint())
 			self.ui.song_list.addItem(simple_item)
 			self.ui.song_list.setItemWidget(simple_item, custom_item)
-			
+
 			self.ui.text_input.clear()
 			self.bridges.append(bridge_text)
 
@@ -417,7 +417,7 @@ class AddSongWindow(QMainWindow):
 				elif not chour and x_item.type_of_item == "chour": chour = x_item.text
 				elif x_item.type_of_item == "bridge": bridges.append({"text": x_item.text, "index": x})
 
-			
+
 			song_text = {
 				"Couplets": couplets,
 				"Chour": chour,
@@ -429,7 +429,7 @@ class AddSongWindow(QMainWindow):
 			cursor = connection.cursor()
 			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
 			connection.commit()
-			
+
 			self.close()
 
 
@@ -1294,7 +1294,7 @@ class ScreenShower(QMainWindow):
 		else:
 			self.open_window()
 			self.hide_text()
-			self.getWords()
+			# self.getWords()
 
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 
