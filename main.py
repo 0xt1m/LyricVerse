@@ -60,6 +60,13 @@ class smartLabel(QLabel):
 		self.setText(ready_text.strip())
 
 
+
+class SongLine:
+	def __init__(text, index_from):
+		self.text = text
+		self.index_from = index_from
+
+
 class WordsWindow(QMainWindow):
 	def __init__(self, screen_number):
 		super().__init__()
@@ -178,11 +185,13 @@ class CustomItem(QWidget):
 		self.setObjectName("CustomItem")
 		self.textQVBoxLayout = QVBoxLayout()
 		self.textQVBoxLayout.setSpacing(7)
-		self.textUp = QLabel()
-		self.textUp.setObjectName("textUp")
+		if type_of_item != "part":
+			self.textUp = QLabel()
+			self.textUp.setObjectName("textUp")
 		self.textDown = QLabel()
 		self.textDown.setObjectName("textDown")
-		self.textQVBoxLayout.addWidget(self.textUp)
+		if type_of_item != "part":
+			self.textQVBoxLayout.addWidget(self.textUp)
 		self.textQVBoxLayout.addWidget(self.textDown)
 
 		self.textDown.setText(text)
@@ -190,14 +199,16 @@ class CustomItem(QWidget):
 		self.allQHBoxLayout = QHBoxLayout()
 		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
 
-		if type_of_item == "couplet":
-			self.textUp.setText("Куплет")
+		if type_of_item != "part":
+			if type_of_item == "couplet":
+				self.textUp.setText("Куплет")
 
-		elif type_of_item == "chour":
-			self.textUp.setText("Приспів")
+			elif type_of_item == "chour":
+				self.textUp.setText("Приспів")
 
-		elif type_of_item == "bridge":
-			self.textUp.setText("Брідж")
+			elif type_of_item == "bridge":
+				self.textUp.setText("Брідж")
+
 
 
 		self.setStyleSheet("""
@@ -805,16 +816,27 @@ class ScreenShower(QMainWindow):
 
 		self.ui.list_words.clear()
 
-		self.song_list_parts = []
-		self.song_list_lines = []
-
 		if self.anyStreamMode:
-			for part in range(len(self.song_list_parts)):
-				for line in self.song_list_parts[part].split("\n"):
-					self.song_list_lines.append(line + " " + str(part))
+			song_parts = []
+			for couplet in song_couplets:
+				song_parts.append(couplet)
+				if song_chour: song_parts.append(song_chour)
+			for b in song_bridges: song_parts.insert(b["index"], b["text"])
+				
+			song_lines = []
+			for part in range(len(song_parts)):
+				part_lines = song_parts[part].split("\n")
+				for line in : self.song_lines.append(SongLine(line, part))
 
-			for line in self.song_list_lines:
-				self.ui.list_words.addItem(line[:-2])
+			for line in song_lines:
+				line_custom_item = CustomItem(line.text, "part")
+				line_item = SongItem(line.text, "part")
+				line_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+				line_item.setSizeHint(line_custom_item.sizeHint())
+
+				self.ui.list_words.addItem(line_item)
+				self.ui.list_words.setItemWidget(line_item, line_custom_item)
+		
 		elif not self.anyStreamMode:
 			for i in song_couplets:
 				couplet_custom_item = CustomItem(i, "couplet")
