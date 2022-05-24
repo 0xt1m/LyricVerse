@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import *
 
 from addSongbook import AddSongbookWindow
 from addSongWindow import Ui_addSongWindow
+from EditSongWindow import Ui_EditSongWindow
 from mybible_handler import Mybible
 from Song import Song
 
@@ -58,7 +59,6 @@ class smartLabel(QLabel):
 			current_height = one_line_height * count_of_lines
 
 		self.setText(ready_text.strip())
-
 
 
 class SongLine:
@@ -223,7 +223,6 @@ class CustomItem(QWidget):
 		self.setLayout(self.allQHBoxLayout)
 
 
-
 class SongItem(QListWidgetItem):
 	def __init__(self, text, type_of_item):
 		super().__init__()
@@ -270,7 +269,6 @@ class AddSongWindow(QMainWindow):
 			""")
 
 
-
 	def edit_song_item(self):
 		self.ui.save_item_btn.setEnabled(True)
 		current_item = self.ui.song_list.currentItem()
@@ -304,28 +302,38 @@ class AddSongWindow(QMainWindow):
 		self.ui.text_input.clear()
 
 
+	def addCustomItem(self, text, type_of_item):
+		custom_item = CustomItem(text, type_of_item)
+		simple_item = SongItem(text, type_of_item)
+		if type_of_item != "bridge":
+			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+		simple_item.setSizeHint(custom_item.sizeHint())
+
+		self.ui.song_list.addItem(simple_item)
+		self.ui.song_list.setItemWidget(simple_item, custom_item)
+
+
+	def insertCustomItem(self, text, type_of_item, index):
+		custom_item = CustomItem(text, type_of_item)
+		simple_item = SongItem(text, type_of_item)
+		if type_of_item != "bridge":
+			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+		simple_item.setSizeHint(custom_item.sizeHint())
+
+		self.ui.song_list.insertItem(index, simple_item)
+		self.ui.song_list.setItemWidget(simple_item, custom_item)
 
 
 	def add_couplet(self):
 		couplet_text = self.ui.text_input.toPlainText().strip()
 		if couplet_text:
-			custom_item = CustomItem(couplet_text, "couplet")
-			simple_item = SongItem(couplet_text, "couplet")
-			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-			simple_item.setSizeHint(custom_item.sizeHint())
-
-			self.ui.song_list.addItem(simple_item)
-			self.ui.song_list.setItemWidget(simple_item, custom_item)
+			self.addCustomItem(couplet_text, "couplet")
 
 			self.ui.text_input.clear()
 			self.couplets.append(couplet_text)
 
 			if self.chour:
-				custom_item = CustomItem(self.chour, "chour")
-				chour_item = SongItem(self.chour, "chour")
-				chour_item.setSizeHint(custom_item.sizeHint())
-				self.ui.song_list.addItem(chour_item)
-				self.ui.song_list.setItemWidget(chour_item, custom_item)
+				self.addCustomItem(self.chour, "chour")
 
 
 	def add_chour(self):
@@ -339,14 +347,8 @@ class AddSongWindow(QMainWindow):
 			x_item = self.ui.song_list.item(x)
 			if x_item.type_of_item == "couplet": couplet_indeces.append(x)
 		if chour_text and not self.chour and couplet_indeces:
-			for i in range(len(couplet_indeces)-1, -1, -1):
-				custom_item = CustomItem(chour_text, "chour")
-				chour_item = SongItem(chour_text, "chour")
-				chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-				chour_item.setSizeHint(custom_item.sizeHint())
-
-				self.ui.song_list.insertItem(couplet_indeces[i]+1, chour_item)
-				self.ui.song_list.setItemWidget(chour_item, custom_item)
+			for i in range(len(couplet_indeces)-1, -1, -1): 
+				self.insertCustomItem(chour_text, "chour", couplet_indeces[i]+1)
 
 			self.ui.text_input.clear()
 			self.chour = chour_text
@@ -361,11 +363,7 @@ class AddSongWindow(QMainWindow):
 	def add_bridge(self):
 		bridge_text = self.ui.text_input.toPlainText().strip()
 		if bridge_text:
-			custom_item = CustomItem(bridge_text, "bridge")
-			simple_item = SongItem(bridge_text, "bridge")
-			simple_item.setSizeHint(custom_item.sizeHint())
-			self.ui.song_list.addItem(simple_item)
-			self.ui.song_list.setItemWidget(simple_item, custom_item)
+			self.addCustomItem(bridge_text, "bridge")
 
 			self.ui.text_input.clear()
 			self.bridges.append(bridge_text)
@@ -451,43 +449,256 @@ class AddSongWindow(QMainWindow):
 			self.close()
 
 
-class EditSongWindow(QMainWindow):
-	def __init__(self, songbook, title):
-		super().__init__()
+# class EditSongWindow(QMainWindow):
+# 	def __init__(self, songbook, title):
+# 		super().__init__()
 
+# 		self.songbook = songbook
+# 		self.title = title
+# 		self.init_ui()
+
+# 	def init_ui(self):
+# 		self.resize(330, 540)
+
+# 		with open("Songbooks/songbooks.json", "r") as jsonfile:
+# 			songbooks = json.load(jsonfile)
+
+# 		filename = songbooks[self.songbook]["filename"]
+
+# 		self.song = Song(filename, self.title)
+
+# 		self.song_title_input = QtWidgets.QLineEdit(self)
+# 		self.song_title_input.setGeometry(10, 10, 310, 20)
+# 		self.song_text_input = QtWidgets.QPlainTextEdit(self)
+# 		self.song_text_input.setGeometry(10, 35, 310, 450)
+# 		self.save_song_btn = QtWidgets.QPushButton(self)
+# 		self.save_song_btn.setGeometry(10, 490, 310, 40)
+
+# 		self.setWindowTitle("Edit song")
+# 		self.song_title_input.setPlaceholderText("Enter song title")
+# 		self.song_text_input.setPlaceholderText("Enter song text")
+# 		self.save_song_btn.setText("Save")
+
+# 		self.song_title_input.setText(self.song.title)
+# 		self.song_text_input.appendPlainText(self.song.song_text)
+
+# 		self.save_song_btn.clicked.connect(self.save_song)
+
+
+# 	def save_song(self):
+# 		with open("Songbooks/songbooks.json", "r") as jsonfile:
+# 			songbooks = json.load(jsonfile)
+
+# 		msg = QMessageBox()
+# 		msg.setIcon(QMessageBox.Warning)
+# 		msg.setWindowTitle("Error")
+
+# 		filename = songbooks[self.songbook]["filename"]
+
+# 		song_title = self.song_title_input.text()
+# 		song_text = self.song_text_input.toPlainText()
+# 		if not song_title:
+# 			msg.setText("Song must to have title!")
+# 			msg.exec_()
+# 		elif not song_text:
+# 			msg.setText("Song must to have text!")
+# 			msg.exec_()
+# 		else:
+# 			connection = sqlite3.connect(f"Songbooks/{filename}")
+# 			cursor = connection.cursor()
+# 			cursor.execute("UPDATE Songs SET title=?, song_text=? WHERE title=?", (song_title, song_text, self.title))
+# 			connection.commit()
+# 			self.close()
+
+
+class EditSongWindow(QMainWindow):
+	def __init__(self, songbook, song):
+		super().__init__()
+		self.ui = Ui_EditSongWindow()
+		self.ui.setupUi(self)
 		self.songbook = songbook
-		self.title = title
+		self.song = song
 		self.init_ui()
 
+
 	def init_ui(self):
-		self.resize(330, 540)
+		self.ui.song_list.setSpacing(2)
+		self.ui.add_couplet_btn.clicked.connect(self.add_couplet)
+		self.ui.add_chour_btn.clicked.connect(self.add_chour)
+		self.ui.add_bridge_btn.clicked.connect(self.add_bridge)
+		self.ui.remove_item_btn.clicked.connect(self.remove_item)
+		self.ui.song_list.itemDoubleClicked.connect(self.edit_song_item)
+		self.ui.save_item_btn.clicked.connect(self.save_song_item)
+		self.ui.edit_song_btn.clicked.connect(self.edit_song)
 
-		with open("Songbooks/songbooks.json", "r") as jsonfile:
-			songbooks = json.load(jsonfile)
+		self.ui.save_item_btn.setEnabled(False)
 
-		filename = songbooks[self.songbook]["filename"]
+		self.chour = ""
 
-		self.song = Song(filename, self.title)
+		self.ui.song_list.setStyleSheet("""
+			::item {
+				background-color: white;
+				border: 1px solid black;
+				border-radius: 10px;
+			}
+			::item:selected{
+				border: 2px solid #c5cc04;
+			}
+			""")
 
-		self.song_title_input = QtWidgets.QLineEdit(self)
-		self.song_title_input.setGeometry(10, 10, 310, 20)
-		self.song_text_input = QtWidgets.QPlainTextEdit(self)
-		self.song_text_input.setGeometry(10, 35, 310, 450)
-		self.save_song_btn = QtWidgets.QPushButton(self)
-		self.save_song_btn.setGeometry(10, 490, 310, 40)
+		
+		self.ui.song_title.setText(self.song.title)
 
-		self.setWindowTitle("Edit song")
-		self.song_title_input.setPlaceholderText("Enter song title")
-		self.song_text_input.setPlaceholderText("Enter song text")
-		self.save_song_btn.setText("Save")
+		song_text = json.loads(self.song.song_text)
+		song_couplets = song_text["Couplets"]
+		song_chour = song_text["Chour"]
+		song_bridges = song_text["Bridges"]
 
-		self.song_title_input.setText(self.song.title)
-		self.song_text_input.appendPlainText(self.song.song_text)
+		for couplet in song_couplets:
+			self.addCustomItem(couplet, "couplet")
+			if song_chour: self.addCustomItem(song_chour, "chour")
 
-		self.save_song_btn.clicked.connect(self.save_song)
+		for bridge in song_bridges: self.insertCustomItem(bridge["text"], "bridge", bridge["index"])
 
 
-	def save_song(self):
+	def edit_song_item(self):
+		self.ui.save_item_btn.setEnabled(True)
+		current_item = self.ui.song_list.currentItem()
+		self.ui.text_input.clear()
+		self.ui.text_input.appendPlainText(current_item.text)
+
+
+	def save_song_item(self):
+		self.ui.save_item_btn.setEnabled(False)
+		current_text = self.ui.text_input.toPlainText()
+		current_item = self.ui.song_list.currentItem()
+		current_item.text = current_text
+
+		if current_item.type_of_item == "couplet":
+			custom_item = CustomItem(current_text, "couplet")
+			current_item.setSizeHint(custom_item.sizeHint())
+			self.ui.song_list.setItemWidget(current_item, custom_item)
+		elif current_item.type_of_item == "chour":
+			for x in range(self.ui.song_list.count()):
+				x_item = self.ui.song_list.item(x)
+				if x_item.type_of_item == "chour":
+					custom_item = CustomItem(current_text, "chour")
+					x_item.setSizeHint(custom_item.sizeHint())
+					self.ui.song_list.setItemWidget(x_item, custom_item)
+					x_item.text = current_text
+		elif current_item.type_of_item == "bridge":
+			custom_item = CustomItem(current_text, "bridge")
+			current_item.setSizeHint(custom_item.sizeHint())
+			self.ui.song_list.setItemWidget(current_item, custom_item)
+
+		self.ui.text_input.clear()
+
+
+	def addCustomItem(self, text, type_of_item):
+		custom_item = CustomItem(text, type_of_item)
+		simple_item = SongItem(text, type_of_item)
+		if type_of_item != "bridge":
+			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+		simple_item.setSizeHint(custom_item.sizeHint())
+
+		self.ui.song_list.addItem(simple_item)
+		self.ui.song_list.setItemWidget(simple_item, custom_item)
+
+
+	def insertCustomItem(self, text, type_of_item, index):
+		custom_item = CustomItem(text, type_of_item)
+		simple_item = SongItem(text, type_of_item)
+		if type_of_item != "bridge":
+			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+		simple_item.setSizeHint(custom_item.sizeHint())
+
+		self.ui.song_list.insertItem(index, simple_item)
+		self.ui.song_list.setItemWidget(simple_item, custom_item)
+
+
+	def add_couplet(self):
+		couplet_text = self.ui.text_input.toPlainText().strip()
+		if couplet_text:
+			self.addCustomItem(couplet_text, "couplet")
+			self.ui.text_input.clear()
+
+			if self.chour: self.addCustomItem(self.chour, "chour")
+
+
+	def add_chour(self):
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setWindowTitle("Error")
+
+		chour_text = self.ui.text_input.toPlainText().strip()
+		couplet_indeces = []
+		for x in range(self.ui.song_list.count()):
+			x_item = self.ui.song_list.item(x)
+			if x_item.type_of_item == "couplet": couplet_indeces.append(x)
+		if chour_text and not self.chour and couplet_indeces:
+			for i in range(len(couplet_indeces)-1, -1, -1):
+				custom_item = CustomItem(chour_text, "chour")
+				chour_item = SongItem(chour_text, "chour")
+				chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+				chour_item.setSizeHint(custom_item.sizeHint())
+
+				self.ui.song_list.insertItem(couplet_indeces[i]+1, chour_item)
+				self.ui.song_list.setItemWidget(chour_item, custom_item)
+
+			self.ui.text_input.clear()
+			self.chour = chour_text
+		elif self.chour: 
+			msg.setText("Chour is already exists") 
+			msg.exec_()
+		else: 
+			msg.setText("Add one couplet please") 
+			msg.exec_()
+
+
+	def add_bridge(self):
+		bridge_text = self.ui.text_input.toPlainText().strip()
+		if bridge_text:
+			self.addCustomItem(bridge_text, "bridge")
+
+			self.ui.text_input.clear()
+
+
+	def remove_item(self):
+		current_item_index = self.ui.song_list.currentRow()
+		if current_item_index != -1:
+			item = self.ui.song_list.item(current_item_index)
+			if item.type_of_item == "chour":
+				self.chour = ""
+				chour_indeces = []
+				for x in range(self.ui.song_list.count()):
+					x_item = self.ui.song_list.item(x)
+					if x_item.type_of_item == "chour": chour_indeces.append(x)
+				for i in range(len(chour_indeces)-1, -1, -1):
+					self.ui.song_list.takeItem(chour_indeces[i])
+
+			elif item.type_of_item == "couplet":
+				self.couplets.pop(item.index)
+				for x in range(item.index, self.ui.song_list.count()):
+					x_item = self.ui.song_list.item(x)
+					if x_item.type_of_item == "couplet":
+						x_item.index = x_item.index - 1
+
+				self.ui.song_list.takeItem(current_item_index)
+				if self.chour:
+					self.ui.song_list.takeItem(current_item_index)
+				if self.chour and self.ui.song_list.count() == 0:
+					self.chour = ""
+			elif item.type_of_item == "bridge":
+				self.bridges.pop(item.index)
+				for x in range(item.index, self.ui.song_list.count()):
+					x_item = self.ui.song_list.item(x)
+					if x_item.type_of_item == "bridge":
+						x_item.index = x_item.index - 1
+
+				self.ui.song_list.takeItem(current_item_index)
+
+
+	def edit_song(self):
 		with open("Songbooks/songbooks.json", "r") as jsonfile:
 			songbooks = json.load(jsonfile)
 
@@ -497,19 +708,37 @@ class EditSongWindow(QMainWindow):
 
 		filename = songbooks[self.songbook]["filename"]
 
-		song_title = self.song_title_input.text()
-		song_text = self.song_text_input.toPlainText()
+		song_title = self.ui.song_title.text()
+		is_song_text = self.ui.song_list.count()
 		if not song_title:
 			msg.setText("Song must to have title!")
 			msg.exec_()
-		elif not song_text:
+		elif not is_song_text:
 			msg.setText("Song must to have text!")
 			msg.exec_()
 		else:
+			couplets = []
+			chour = ""
+			bridges = []
+			for x in range(self.ui.song_list.count()):
+				x_item = self.ui.song_list.item(x)
+				if x_item.type_of_item == "couplet": couplets.append(x_item.text)
+				elif not chour and x_item.type_of_item == "chour": chour = x_item.text
+				elif x_item.type_of_item == "bridge": bridges.append({"text": x_item.text, "index": x})
+
+
+			song_text = {
+				"Couplets": couplets,
+				"Chour": chour,
+				"Bridges": bridges
+			}
+			song_text = json.dumps(song_text, indent=4)
+
 			connection = sqlite3.connect(f"Songbooks/{filename}")
 			cursor = connection.cursor()
-			cursor.execute("UPDATE Songs SET title=?, song_text=? WHERE title=?", (song_title, song_text, self.title))
+			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
 			connection.commit()
+
 			self.close()
 
 
@@ -586,6 +815,7 @@ class ScreenShower(QMainWindow):
 		self.bible_place = [None, None, None]
 		self.lastShown = None
 		self.streamModeChanged = False
+		self.song = None
 
 		self.set_settings_for_screen()
 		self.open_window()
@@ -636,13 +866,12 @@ class ScreenShower(QMainWindow):
 
 
 	def edit_song(self):
-		try:
-			self.editsong = EditSongWindow(self.ui.av_songbooks.currentText(), self.song.title)
+		if self.song != None:
+			self.editsong = EditSongWindow(self.ui.av_songbooks.currentText(), self.song)
 			self.editsong.show()
 
 			self.editsong.closeEvent = self.updateSongList
-		except Exception as error:
-			print(error)
+		else:
 			msg = QMessageBox()
 			msg.setIcon(QMessageBox.Warning)
 			msg.setWindowTitle("Error")
@@ -808,8 +1037,8 @@ class ScreenShower(QMainWindow):
 			song_title += t + " "
 		song_title = song_title.strip()
 
-		song = self.getSong(song_title)
-		song_text = json.loads(song.song_text)
+		self.song = self.getSong(song_title)
+		song_text = json.loads(self.song.song_text)
 		song_couplets = song_text["Couplets"]
 		song_chour = song_text["Chour"]
 		song_bridges = song_text["Bridges"]
