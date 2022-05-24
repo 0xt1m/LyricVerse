@@ -708,7 +708,7 @@ class EditSongWindow(QMainWindow):
 
 		filename = songbooks[self.songbook]["filename"]
 
-		song_title = self.ui.song_title.text()
+		song_title = self.ui.song_title.text().strip()
 		is_song_text = self.ui.song_list.count()
 		if not song_title:
 			msg.setText("Song must to have title!")
@@ -736,7 +736,7 @@ class EditSongWindow(QMainWindow):
 
 			connection = sqlite3.connect(f"Songbooks/{filename}")
 			cursor = connection.cursor()
-			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
+			cursor.execute(f"UPDATE Songs SET title=?, song_text=? WHERE number={self.song.number}", (song_title, song_text))
 			connection.commit()
 
 			self.close()
