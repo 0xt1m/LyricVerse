@@ -378,31 +378,14 @@ class AddSongWindow(QMainWindow):
 				chour_indeces = []
 				for x in range(self.ui.song_list.count()):
 					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "chour":
-						chour_indeces.append(x)
-				for i in range(len(chour_indeces)-1, -1, -1):
-					self.ui.song_list.takeItem(chour_indeces[i])
+					if x_item.type_of_item == "chour": chour_indeces.append(x)
+				for i in range(len(chour_indeces)-1, -1, -1): self.ui.song_list.takeItem(chour_indeces[i])
 
 			elif item.type_of_item == "couplet":
-				self.couplets.pop(item.index)
-				for x in range(item.index, self.ui.song_list.count()):
-					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "couplet":
-						x_item.index = x_item.index - 1
-
 				self.ui.song_list.takeItem(current_item_index)
-				if self.chour:
-					self.ui.song_list.takeItem(current_item_index)
-				if self.chour and self.ui.song_list.count() == 0:
-					self.chour = ""
-			elif item.type_of_item == "bridge":
-				self.bridges.pop(item.index)
-				for x in range(item.index, self.ui.song_list.count()):
-					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "bridge":
-						x_item.index = x_item.index - 1
-
-				self.ui.song_list.takeItem(current_item_index)
+				if self.chour: self.ui.song_list.takeItem(current_item_index)
+				if self.chour and self.ui.song_list.count() == 0: self.chour = ""
+			elif item.type_of_item == "bridge": self.ui.song_list.takeItem(current_item_index)
 
 
 	def add_song(self):
@@ -551,12 +534,12 @@ class EditSongWindow(QMainWindow):
 
 		song_text = json.loads(self.song.song_text)
 		song_couplets = song_text["Couplets"]
-		song_chour = song_text["Chour"]
+		self.chour = song_text["Chour"]
 		song_bridges = song_text["Bridges"]
 
 		for couplet in song_couplets:
 			self.addCustomItem(couplet, "couplet")
-			if song_chour: self.addCustomItem(song_chour, "chour")
+			if self.chour: self.addCustomItem(self.chour, "chour")
 
 		for bridge in song_bridges: self.insertCustomItem(bridge["text"], "bridge", bridge["index"])
 
@@ -673,29 +656,13 @@ class EditSongWindow(QMainWindow):
 				for x in range(self.ui.song_list.count()):
 					x_item = self.ui.song_list.item(x)
 					if x_item.type_of_item == "chour": chour_indeces.append(x)
-				for i in range(len(chour_indeces)-1, -1, -1):
-					self.ui.song_list.takeItem(chour_indeces[i])
+				for i in range(len(chour_indeces)-1, -1, -1): self.ui.song_list.takeItem(chour_indeces[i])
 
 			elif item.type_of_item == "couplet":
-				self.couplets.pop(item.index)
-				for x in range(item.index, self.ui.song_list.count()):
-					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "couplet":
-						x_item.index = x_item.index - 1
-
 				self.ui.song_list.takeItem(current_item_index)
-				if self.chour:
-					self.ui.song_list.takeItem(current_item_index)
-				if self.chour and self.ui.song_list.count() == 0:
-					self.chour = ""
-			elif item.type_of_item == "bridge":
-				self.bridges.pop(item.index)
-				for x in range(item.index, self.ui.song_list.count()):
-					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "bridge":
-						x_item.index = x_item.index - 1
-
-				self.ui.song_list.takeItem(current_item_index)
+				if self.chour: self.ui.song_list.takeItem(current_item_index)
+				if self.chour and self.ui.song_list.count() == 0: self.chour = ""
+			elif item.type_of_item == "bridge": self.ui.song_list.takeItem(current_item_index)
 
 
 	def edit_song(self):
@@ -736,7 +703,7 @@ class EditSongWindow(QMainWindow):
 
 			connection = sqlite3.connect(f"Songbooks/{filename}")
 			cursor = connection.cursor()
-			cursor.execute(f"UPDATE Songs SET title=?, song_text=? WHERE number={self.song.number}", (song_title, song_text))
+			cursor.execute(f"UPDATE Songs SET title=?, song_text=? WHERE id={self.song.number}", (song_title, song_text))
 			connection.commit()
 
 			self.close()
@@ -1076,8 +1043,8 @@ class ScreenShower(QMainWindow):
 				self.ui.list_words.addItem(couplet_item)
 				self.ui.list_words.setItemWidget(couplet_item, couplet_custom_item)
 				if song_chour != "":
-					chour_custom_item = CustomItem(i, "chour")
-					chour_item = SongItem(i, "chour")
+					chour_custom_item = CustomItem(song_chour, "chour")
+					chour_item = SongItem(song_chour, "chour")
 					chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
 					chour_item.setSizeHint(chour_custom_item.sizeHint())
 
