@@ -62,7 +62,7 @@ class smartLabel(QLabel):
 
 
 class SongLine:
-	def __init__(text, index_from):
+	def __init__(self, text, index_from):
 		self.text = text
 		self.index_from = index_from
 
@@ -826,7 +826,7 @@ class ScreenShower(QMainWindow):
 			song_lines = []
 			for part in range(len(song_parts)):
 				part_lines = song_parts[part].split("\n")
-				for line in : self.song_lines.append(SongLine(line, part))
+				for line in part_lines: song_lines.append(SongLine(line, part))
 
 			for line in song_lines:
 				line_custom_item = CustomItem(line.text, "part")
