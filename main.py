@@ -78,7 +78,6 @@ class SongLine:
 		self.wholePart = wholePart
 
 
-
 class WordsWindow(QMainWindow):
 	def __init__(self, screen_number):
 		super().__init__()
@@ -732,6 +731,7 @@ class ScreenShower(QMainWindow):
 		self.lastShown = None
 		self.streamModeChanged = False
 		self.song = None
+		self.last_shown_song = None
 
 		self.set_settings_for_screen()
 		self.open_window()
@@ -776,11 +776,6 @@ class ScreenShower(QMainWindow):
 		self.addsong.closeEvent = self.updateSongList
 
 
-	def updateSongList(self, event):
-		self.get_songs_from_songbook()
-		self.searchSong()
-
-
 	def edit_song(self):
 		if self.song != None:
 			self.editsong = EditSongWindow(self.ui.av_songbooks.currentText(), self.song)
@@ -793,6 +788,13 @@ class ScreenShower(QMainWindow):
 			msg.setWindowTitle("Error")
 			msg.setText("You have to select song that you want to edit!")
 			msg.exec_()
+
+
+	def updateSongList(self, event):
+		self.get_songs_from_songbook()
+		if self.song:
+			self.ui.list_songs.setCurrentRow(self.song.number - 1)
+		self.searchSong()
 
 
 	def set_bible(self):
@@ -1032,7 +1034,7 @@ class ScreenShower(QMainWindow):
 		songs = self.cursor.execute("SELECT * FROM Songs").fetchall()
 		res = []
 
-		req = self.ui.song_search.text()
+		req = self.ui.song_search.text().strip()
 		if req.isdigit():
 			req = int(req)
 			res = self.cursor.execute(f"SELECT * FROM Songs WHERE id={req}").fetchall()
@@ -1050,10 +1052,16 @@ class ScreenShower(QMainWindow):
 		for i in res:
 			self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
 
-		try:
-			self.ui.list_songs.setCurrentRow(0)
-		except:
-			pass
+		if not req: 
+			if self.last_shown_song:
+				self.ui.list_songs.setCurrentRow(self.last_shown_song.number - 1)
+			elif self.song: 
+				self.ui.list_songs.setCurrentRow(self.song.number - 1)
+		else:
+			try:
+				self.ui.list_songs.setCurrentRow(0)
+			except:
+				pass
 
 
 	def closeEvent(self, event):
@@ -1068,6 +1076,9 @@ class ScreenShower(QMainWindow):
 			self.open_window()
 
 		self.lastShown = "song"
+
+		song_number = int(self.ui.list_songs.currentItem().text().split()[0])
+		self.last_shown_song = self.getSong(song_number)
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
