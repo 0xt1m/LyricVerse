@@ -192,9 +192,7 @@ class CustomItem(QWidget):
 		self.type_of_item = type_of_item
 		self.text = text
 
-		print(text)
-		self.__textWrap()
-		print(text)
+		self.__setTextWrap()
 
 		self.setObjectName("CustomItem")
 		self.textQVBoxLayout = QVBoxLayout()
@@ -208,7 +206,7 @@ class CustomItem(QWidget):
 			self.textQVBoxLayout.addWidget(self.textUp)
 		self.textQVBoxLayout.addWidget(self.textDown)
 
-		self.textDown.setText(text)
+		self.textDown.setText(self.text)
 
 		self.allQHBoxLayout = QHBoxLayout()
 		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
@@ -237,16 +235,37 @@ class CustomItem(QWidget):
 		self.setLayout(self.allQHBoxLayout)
 
 
-	def __textWrap(self):
-		text = self.text
-		splited_text = text.split()
+	def __setTextWrap(self):
+		self.text = self.text.replace("\n", " ")
+		text_list = list(self.text)
 		lines_list = []
-		for word in splited_text:
-			line = ""
-			for i in range(8): line += word.strip() + " "
-			lines_list.append(line)
-		text = "\n".join(lines_list)
-		self.text = text
+		line = ""
+		i = 0
+		counter = 0
+		while i < len(text_list):
+			if counter == 50:
+				copy_i = i
+				copy_line = line
+				while text_list[i] != " ": 
+					if i == 0:
+						i = copy_i
+						line = copy_line + "-\n"
+						break
+					i -= 1
+					line = line[:-1]
+					
+				lines_list.append(line.strip())
+				counter = 0
+				line = ""
+			
+			if text_list[i] == " " and text_list[i - 1] == " ": i += 1
+			else:
+				line += text_list[i]
+				i += 1
+				counter += 1
+		lines_list.append(line.strip())
+		self.text = "\n".join(lines_list)
+
 
 class SongItem(QListWidgetItem):
 	def __init__(self, text, type_of_item):
