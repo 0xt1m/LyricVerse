@@ -1,6 +1,6 @@
 {
     "screen_0": {
-        "show_words": false,
+        "show_words": true,
         "stream_mode": false,
         "simple_mode_settings": {
             "font_size": 90,
@@ -32,6 +32,7 @@
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
+            "horizontal_margins": 50,
             "shadow": true,
             "shadow_blur_radius": 4,
             "shadow_offset": {
@@ -83,10 +84,11 @@
             }
         },
         "stream_mode_settings": {
-            "font_size": 100,
+            "font_size": 80,
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
+            "horizontal_margins": 50,
             "shadow": true,
             "shadow_blur_radius": 20,
             "shadow_offset": {
@@ -142,6 +144,7 @@
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
+            "horizontal_margins": 50,
             "shadow": true,
             "shadow_blur_radius": 4,
             "shadow_offset": {
@@ -193,6 +196,7 @@
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
+            "horizontal_margins": 50,
             "shadow": true,
             "shadow_blur_radius": 4,
             "shadow_offset": {

@@ -37,13 +37,15 @@ class smartLabel(QLabel):
 		count_of_lines = len(self.text().split("\n"))
 		current_height = one_line_height * count_of_lines
 
-		while current_height < self.size().height() - font_size and font_size <= max_font_size:
+		ready_text = ""
+
+		while current_height < self.size().height() - (font_size + (font_size / 2)) and font_size <= max_font_size:
 			words = self.text().split()
 			ready_text = ""
 			active_text = ""
 			for w in range(len(words)):
 				current_width = self.fontMetrics().boundingRect(active_text + words[w] + " ").width()
-				if current_width > self.size().width() - (font_size + 10):
+				if current_width > self.size().width() - (font_size + (font_size / 2)):
 					ready_text += active_text.strip() + "\n"
 					active_text = ""
 				active_text += words[w] + " "
@@ -192,8 +194,6 @@ class CustomItem(QWidget):
 		self.type_of_item = type_of_item
 		self.text = text
 
-		self.__setTextWrap()
-
 		self.setObjectName("CustomItem")
 		self.textQVBoxLayout = QVBoxLayout()
 		self.textQVBoxLayout.setSpacing(7)
@@ -233,39 +233,7 @@ class CustomItem(QWidget):
 			""")
 
 		self.setLayout(self.allQHBoxLayout)
-
-
-	def __setTextWrap(self):
-		self.text = self.text.replace("\n", " ")
-		text_list = list(self.text)
-		lines_list = []
-		line = ""
-		i = 0
-		counter = 0
-		while i < len(text_list):
-			if counter == 50:
-				copy_i = i
-				copy_line = line
-				while text_list[i] != " ": 
-					if i == 0:
-						i = copy_i
-						line = copy_line + "-\n"
-						break
-					i -= 1
-					line = line[:-1]
-					
-				lines_list.append(line.strip())
-				counter = 0
-				line = ""
-			
-			if text_list[i] == " " and text_list[i - 1] == " ": i += 1
-			else:
-				line += text_list[i]
-				i += 1
-				counter += 1
-		lines_list.append(line.strip())
-		self.text = "\n".join(lines_list)
-
+	
 
 class SongItem(QListWidgetItem):
 	def __init__(self, text, type_of_item):
@@ -706,7 +674,6 @@ class ScreenShower(QMainWindow):
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
-		self.ui.list_words.setWordWrap(True)
 		self.ui.list_words.itemPressed.connect(self.showSong)
 		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
@@ -948,7 +915,8 @@ class ScreenShower(QMainWindow):
 		except: pass
 
 		if self.ui.av_songbooks.currentText():
-			self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[self.ui.av_songbooks.currentText()]["filename"]}')
+			current_songbook = self.ui.av_songbooks.currentText()
+			self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[current_songbook]["filename"]}')
 			self.cursor = self.connection.cursor()
 			song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
 
@@ -961,13 +929,13 @@ class ScreenShower(QMainWindow):
 			self.ui.list_words.itemSelectionChanged.connect(self.showSong)
 
 
-	def getSong(self, song_title):
+	def getSong(self, song_number):
 		filename = self.songbooks[self.ui.av_songbooks.currentText()]["filename"]
 		db = sqlite3.connect(f"Songbooks/{filename}")
 		sql = db.cursor()
-		song = sql.execute(f"SELECT * FROM Songs WHERE title='{song_title}'").fetchall()
+		song = sql.execute(f"SELECT * FROM Songs WHERE id='{song_number}'").fetchall()
 		number = song[0][0]
-		title = song_title
+		title = song[0][1]
 		song_text = song[0][2]
 
 		return Song(number, title, song_text)
@@ -978,15 +946,9 @@ class ScreenShower(QMainWindow):
 		except: pass
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 
-		text_l = self.ui.list_songs.currentItem().text().split()
-		text_l.pop(0)
+		song_number = int(self.ui.list_songs.currentItem().text().split()[0])
 
-		song_title = ""
-		for t in text_l:
-			song_title += t + " "
-		song_title = song_title.strip()
-
-		self.song = self.getSong(song_title)
+		self.song = self.getSong(song_number)
 		song_text = json.loads(self.song.song_text)
 		song_couplets = song_text["Couplets"]
 		song_chour = song_text["Chour"]
@@ -1132,7 +1094,7 @@ class ScreenShower(QMainWindow):
 				self.screens[s].label.setText(line)
 
 				one_line_height = self.screens[s].label.fontMetrics().boundingRect(self.screens[s].label.text()).height()
-				label_width = screen_size.width()
+				label_width = screen_size.width() - settings[screen]["stream_mode_settings"]["horizontal_margins"]
 				screen_center_x = screen_size.width() / 2
 				label_center_x = label_width / 2
 				margin_bottom = settings[screen]["stream_mode_settings"]["margin_bottom"]

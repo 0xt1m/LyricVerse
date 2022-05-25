@@ -8,6 +8,8 @@ class Song:
 		self.title = title
 		self.song_text = song_text
 
+		# self.__setTextWrap()
+
 		song_text_lines = self.song_text.split("\n")
 		self.song_list = []
 		part_of_song = ""
@@ -52,6 +54,38 @@ class Song:
 		}
 		song_json = json.dumps(Song, indent=4)
 		self.song_text = song_json
+
+
+	def __setTextWrap(self):
+		self.song_text = self.song_text.replace("\n", " ")
+		text_list = list(self.song_text)
+		lines_list = []
+		line = ""
+		i = 0
+		counter = 0
+		while i < len(text_list):
+			if counter == 50:
+				copy_i = i
+				copy_line = line
+				while text_list[i] != " ": 
+					if i == 0:
+						i = copy_i
+						line = copy_line + "-\n"
+						break
+					i -= 1
+					line = line[:-1]
+					
+				lines_list.append(line.strip())
+				counter = 0
+				line = ""
+			
+			if text_list[i] == " " and text_list[i - 1] == " ": i += 1
+			else:
+				line += text_list[i]
+				i += 1
+				counter += 1
+		lines_list.append(line.strip())
+		# self.song_text = "\n".join(lines_list)
 
 
 

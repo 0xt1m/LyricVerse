@@ -64,13 +64,5 @@ def importSongsFromSP(filename, title):
 
 	connection.commit()
 	addSongbookToJson(filename.replace("sps", "db"), title)
-		
-
-importSongsFromSP("EvPisni.sps", "ЄвПісні")
-
-
-
-
-
 
 
