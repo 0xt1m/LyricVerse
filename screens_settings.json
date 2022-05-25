@@ -3,7 +3,7 @@
         "show_words": false,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 60,
+            "font_size": 90,
             "background": "black",
             "text_color": "white",
             "song_margins": {
@@ -58,12 +58,12 @@
         "show_words": true,
         "stream_mode": true,
         "simple_mode_settings": {
-            "font_size": 120,
+            "font_size": 140,
             "background": "black",
             "text_color": "white",
             "song_margins": {
-                "h": 20,
-                "v": 20
+                "h": 5,
+                "v": 80
             },
             "bible_margins": {
                 "h": 50,

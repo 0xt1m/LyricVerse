@@ -29,7 +29,7 @@ class smartLabel(QLabel):
 		super().__init__(screen)
 
 	def ownWordWrap(self, max_font_size=150):
-		font_size = 5
+		font_size = 2
 		font = QFont("Arial", font_size)
 		self.setFont(font)
 
@@ -37,13 +37,13 @@ class smartLabel(QLabel):
 		count_of_lines = len(self.text().split("\n"))
 		current_height = one_line_height * count_of_lines
 
-		while current_height + font_size * 2.3 < self.size().height() and font_size <= max_font_size:
+		while current_height < self.size().height() - font_size and font_size <= max_font_size:
 			words = self.text().split()
 			ready_text = ""
 			active_text = ""
 			for w in range(len(words)):
 				current_width = self.fontMetrics().boundingRect(active_text + words[w] + " ").width()
-				if current_width + font_size * 2 > self.size().width():
+				if current_width > self.size().width() - (font_size + 10):
 					ready_text += active_text.strip() + "\n"
 					active_text = ""
 				active_text += words[w] + " "
@@ -57,14 +57,24 @@ class smartLabel(QLabel):
 			one_line_height = self.fontMetrics().boundingRect(ready_text).height()
 			count_of_lines = len(ready_text.split("\n"))
 			current_height = one_line_height * count_of_lines
+			while current_height > self.size().height():				
+				font_size -= 2
+				new_font = QFont("Arial", font_size)
+				new_font.setBold(True)
+				self.setFont(new_font)
+				
+				one_line_height = self.fontMetrics().boundingRect(ready_text).height()
+				current_height = one_line_height * count_of_lines
 
 		self.setText(ready_text.strip())
 
 
 class SongLine:
-	def __init__(self, text, index_from):
+	def __init__(self, text, wholePart, index_from):
 		self.text = text
 		self.index_from = index_from
+		self.wholePart = wholePart
+
 
 
 class WordsWindow(QMainWindow):
@@ -182,6 +192,10 @@ class CustomItem(QWidget):
 		self.type_of_item = type_of_item
 		self.text = text
 
+		print(text)
+		self.__textWrap()
+		print(text)
+
 		self.setObjectName("CustomItem")
 		self.textQVBoxLayout = QVBoxLayout()
 		self.textQVBoxLayout.setSpacing(7)
@@ -222,6 +236,17 @@ class CustomItem(QWidget):
 
 		self.setLayout(self.allQHBoxLayout)
 
+
+	def __textWrap(self):
+		text = self.text
+		splited_text = text.split()
+		lines_list = []
+		for word in splited_text:
+			line = ""
+			for i in range(8): line += word.strip() + " "
+			lines_list.append(line)
+		text = "\n".join(lines_list)
+		self.text = text
 
 class SongItem(QListWidgetItem):
 	def __init__(self, text, type_of_item):
@@ -430,68 +455,6 @@ class AddSongWindow(QMainWindow):
 			connection.commit()
 
 			self.close()
-
-
-# class EditSongWindow(QMainWindow):
-# 	def __init__(self, songbook, title):
-# 		super().__init__()
-
-# 		self.songbook = songbook
-# 		self.title = title
-# 		self.init_ui()
-
-# 	def init_ui(self):
-# 		self.resize(330, 540)
-
-# 		with open("Songbooks/songbooks.json", "r") as jsonfile:
-# 			songbooks = json.load(jsonfile)
-
-# 		filename = songbooks[self.songbook]["filename"]
-
-# 		self.song = Song(filename, self.title)
-
-# 		self.song_title_input = QtWidgets.QLineEdit(self)
-# 		self.song_title_input.setGeometry(10, 10, 310, 20)
-# 		self.song_text_input = QtWidgets.QPlainTextEdit(self)
-# 		self.song_text_input.setGeometry(10, 35, 310, 450)
-# 		self.save_song_btn = QtWidgets.QPushButton(self)
-# 		self.save_song_btn.setGeometry(10, 490, 310, 40)
-
-# 		self.setWindowTitle("Edit song")
-# 		self.song_title_input.setPlaceholderText("Enter song title")
-# 		self.song_text_input.setPlaceholderText("Enter song text")
-# 		self.save_song_btn.setText("Save")
-
-# 		self.song_title_input.setText(self.song.title)
-# 		self.song_text_input.appendPlainText(self.song.song_text)
-
-# 		self.save_song_btn.clicked.connect(self.save_song)
-
-
-# 	def save_song(self):
-# 		with open("Songbooks/songbooks.json", "r") as jsonfile:
-# 			songbooks = json.load(jsonfile)
-
-# 		msg = QMessageBox()
-# 		msg.setIcon(QMessageBox.Warning)
-# 		msg.setWindowTitle("Error")
-
-# 		filename = songbooks[self.songbook]["filename"]
-
-# 		song_title = self.song_title_input.text()
-# 		song_text = self.song_text_input.toPlainText()
-# 		if not song_title:
-# 			msg.setText("Song must to have title!")
-# 			msg.exec_()
-# 		elif not song_text:
-# 			msg.setText("Song must to have text!")
-# 			msg.exec_()
-# 		else:
-# 			connection = sqlite3.connect(f"Songbooks/{filename}")
-# 			cursor = connection.cursor()
-# 			cursor.execute("UPDATE Songs SET title=?, song_text=? WHERE title=?", (song_title, song_text, self.title))
-# 			connection.commit()
-# 			self.close()
 
 
 class EditSongWindow(QMainWindow):
@@ -1019,12 +982,12 @@ class ScreenShower(QMainWindow):
 				if song_chour: song_parts.append(song_chour)
 			for b in song_bridges: song_parts.insert(b["index"], b["text"])
 				
-			song_lines = []
+			self.song_lines = []
 			for part in range(len(song_parts)):
 				part_lines = song_parts[part].split("\n")
-				for line in part_lines: song_lines.append(SongLine(line, part))
+				for line in part_lines: self.song_lines.append(SongLine(line, song_parts[part], part))
 
-			for line in song_lines:
+			for line in self.song_lines:
 				line_custom_item = CustomItem(line.text, "part")
 				line_item = SongItem(line.text, "part")
 				line_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
@@ -1146,11 +1109,11 @@ class ScreenShower(QMainWindow):
 				f.setBold(True)
 				self.screens[s].label.setFont(f)
 
-				line = self.ui.list_words.currentItem().text()
+				line = self.ui.list_words.currentItem().text
 				self.screens[s].label.setText(line)
 
 				one_line_height = self.screens[s].label.fontMetrics().boundingRect(self.screens[s].label.text()).height()
-				label_width = screen_size.width() - 20
+				label_width = screen_size.width()
 				screen_center_x = screen_size.width() / 2
 				label_center_x = label_width / 2
 				margin_bottom = settings[screen]["stream_mode_settings"]["margin_bottom"]
@@ -1163,10 +1126,10 @@ class ScreenShower(QMainWindow):
 
 			elif settings[screen]["show_words"] and not settings[screen]["stream_mode"]:
 				if self.anyStreamMode:
-					partIndex = int(self.song_list_lines[self.ui.list_words.currentRow()].split().pop())
-					part = self.song_list_parts[partIndex]
+					lineIndex = self.ui.list_words.currentRow()
+					part = self.song_lines[lineIndex].wholePart
 				else:
-					part = self.ui.list_words.currentItem().text()
+					part = self.ui.list_words.currentItem().text
 				self.screens[s].label.setText(part)
 
 				font_size = settings[screen]["simple_mode_settings"]["font_size"]
