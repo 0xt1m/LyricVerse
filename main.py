@@ -185,6 +185,9 @@ class WordsWindow(QMainWindow):
 			self.label.setGraphicsEffect(shadow)
 			self.label_info.setGraphicsEffect(shadow)
 
+	def closeEvent(self, event):
+		self.isShowing = False
+
 
 class CustomItem(QWidget):
 	def __init__(self, text, type_of_item):
@@ -677,9 +680,8 @@ class ScreenShower(QMainWindow):
 		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
-		self.ui.screensCB.currentTextChanged.connect(self.set_settings_from_screen)
-		self.ui.btn_save.clicked.connect(self.change_settings_for_screen)
-		self.ui.btn_save.clicked.connect(self.set_settings_for_screen)
+		self.ui.screensCB.currentTextChanged.connect(self.set_values)
+		self.ui.btn_save.clicked.connect(self.set_settings)
 		self.ui.av_songbooks.currentTextChanged.connect(self.get_songs_from_songbook)
 		self.ui.av_translations.currentTextChanged.connect(self.set_bible)
 		self.ui.bible_books_list.itemSelectionChanged.connect(self.get_chapters)
@@ -732,8 +734,9 @@ class ScreenShower(QMainWindow):
 		self.streamModeChanged = False
 		self.song = None
 		self.last_shown_song = None
+		self.screens = []
 
-		self.set_settings_for_screen()
+		self.set_settings()
 		self.open_window()
 
 
@@ -1241,6 +1244,9 @@ class ScreenShower(QMainWindow):
 				self.screens[s].label_info.setFont(f)
 
 
+
+	
+
 	def list_to_bible_place(self, l):
 		res = ""
 		for i in range(len(l)):
@@ -1263,19 +1269,23 @@ class ScreenShower(QMainWindow):
 			# self.ui.screensCB.addItem(str(i))
 
 
-	def close_window(self):
-		try: self.screens[1]
-		except: return
+	def close_window(self, number=None):
+		if not number:
+			try: self.screens[1]
+			except: return
 
-		for s in self.screens:
-			try: s.close()
+			for s in self.screens:
+				try: s.close()
+				except: pass
+
+			try: self.addsong.close()
 			except: pass
 
-		try: self.addsong.close()
-		except: pass
-
-		try: self.add_songbook_window.close()
-		except: pass
+			try: self.add_songbook_window.close()
+			except: pass
+		elif number:
+			try: self.screens[int(number)].close()
+			except Exception as error: print(error)
 
 
 	def hide_text(self):
@@ -1293,7 +1303,7 @@ class ScreenShower(QMainWindow):
 					pass
 
 
-	def set_settings_from_screen(self):
+	def set_values(self):
 		screen_number = self.ui.screensCB.currentText()
 		screen = "screen_" + str(screen_number)
 
@@ -1320,11 +1330,8 @@ class ScreenShower(QMainWindow):
 		self.ui.text_color_input_stream.setText(settings[screen]["stream_mode_settings"]["text_color"])
 		self.ui.shadow_checkbox_stream.setChecked(settings[screen]["stream_mode_settings"]["shadow"])
 
-
-	def change_settings_for_screen(self):
-		self.hide_text()
-		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
-
+		
+	def set_settings(self):
 		screen_number = self.ui.screensCB.currentText()
 		screen = "screen_" + str(screen_number)
 
@@ -1337,7 +1344,8 @@ class ScreenShower(QMainWindow):
 		text_color_stream = self.ui.text_color_input_stream.text()
 		font_size_stream = self.ui.font_size_input_stream.value()
 		shadow_stream = bool(self.ui.shadow_checkbox_stream.checkState())
-
+		
+		# Write setting to json file
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
 
@@ -1351,59 +1359,36 @@ class ScreenShower(QMainWindow):
 		settings[screen]["simple_mode_settings"]["font_size"] = font_size
 		settings[screen]["simple_mode_settings"]["shadow"] = shadow
 
-		if settings[screen]["stream_mode"] != stream_mode:
-			self.streamModeChanged = True
-		else:
-			self.streamModeChanged = False
+		if settings[screen]["stream_mode"] != stream_mode: self.streamModeChanged = True
+		else: self.streamModeChanged = False
 
 		settings[screen]["stream_mode"] = stream_mode
 		settings[screen]["stream_mode_settings"]["text_color"] = text_color_stream
 		settings[screen]["stream_mode_settings"]["font_size"] = font_size_stream
 		settings[screen]["stream_mode_settings"]["shadow"] = shadow_stream
 
+		# Write to file
 		with open("screens_settings.json", "w") as jsonfile:
 			jsonfile.write(json.dumps(settings, indent=4))
 
-		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
-
-
-	def set_settings_for_screen(self):
+		# Apply settings
 		self.anyStreamMode = self.check_stream_mode()
-
 		if not self.streamModeChanged:
-			if self.lastShown == None:
-				self.hide_text()
-			elif self.lastShown == "song":
-				try:
-					self.hide_text()
-					self.showSong()
-				except Exception as error:
-					print(error)
-					self.hide_text()
+			if self.lastShown == "song":
+				self.showSong()
 			elif self.lastShown == "bible":
-				try:
-					self.hide_text()
-					self.showBible()
-				except Exception as error:
-					print(error)
-					self.hide_text()
-		else:
-			self.open_window()
+				self.showBible()
+		elif self.streamModeChanged:
 			self.hide_text()
-			# self.getWords()
+			self.getWords()
+		
+		self.applySettingsForScreens()
+
 
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 
-		screen_number = self.ui.screensCB.currentText()
-		screen = "screen_" + str(screen_number)
-
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
-
-		if settings[screen]["show_words"]:
-			self.open_window()
-		else:
-			self.close_window()
 
 		if settings[screen]["stream_mode"]:
 			self.ui.settings_mode_tabs.setCurrentIndex(1)
@@ -1411,6 +1396,30 @@ class ScreenShower(QMainWindow):
 			self.ui.settings_mode_tabs.setCurrentIndex(0)
 
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+
+
+	def applySettingsForScreens(self):
+		with open("screens_settings.json", "r") as jsonfile:
+			settings = json.load(jsonfile)
+
+		for i in range(len(self.screens)):
+			screen = "screen_" + str(i)
+			if not settings[screen]["show_words"]:
+				try: 
+					self.screens[i].close()
+				except: pass
+
+			if not self.screens[i].isShowing and settings[screen]["show_words"]:
+				self.open_window()
+
+			if settings[screen]["stream_mode"]:
+				background = settings[screen]["stream_mode_settings"]["background"]
+				styles = "#WordsWindow { background: %s; }" % (background)
+				self.screens[i].setStyleSheet(styles)
+			elif not settings[screen]["stream_mode"]:
+				background = settings[screen]["simple_mode_settings"]["background"]
+				styles = "#WordsWindow { background: %s; }" % (background)
+				self.screens[i].setStyleSheet(styles)
 
 
 

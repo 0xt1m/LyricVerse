@@ -1,7 +1,7 @@
 {
     "screen_0": {
-        "show_words": true,
-        "stream_mode": true,
+        "show_words": false,
+        "stream_mode": false,
         "simple_mode_settings": {
             "font_size": 90,
             "background": "black",
@@ -57,11 +57,11 @@
     },
     "screen_1": {
         "show_words": true,
-        "stream_mode": true,
+        "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 140,
+            "font_size": 80,
             "background": "black",
-            "text_color": "white",
+            "text_color": "",
             "song_margins": {
                 "h": 5,
                 "v": 80
