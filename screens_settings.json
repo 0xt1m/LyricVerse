@@ -1,7 +1,7 @@
 {
     "screen_0": {
-        "show_words": false,
-        "stream_mode": false,
+        "show_words": true,
+        "stream_mode": true,
         "simple_mode_settings": {
             "font_size": 90,
             "background": "black",

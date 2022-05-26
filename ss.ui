@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>650</width>
-    <height>552</height>
+    <height>566</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,7 +95,7 @@
      <widget class="QComboBox" name="av_songbooks">
       <property name="geometry">
        <rect>
-        <x>160</x>
+        <x>130</x>
         <y>450</y>
         <width>221</width>
         <height>22</height>
@@ -151,8 +151,8 @@
        <rect>
         <x>390</x>
         <y>480</y>
-        <width>131</width>
-        <height>23</height>
+        <width>151</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
