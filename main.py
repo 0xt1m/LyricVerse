@@ -672,7 +672,7 @@ class ScreenShower(QMainWindow):
 	def init_ui(self):
 		self.anyStreamMode = self.check_stream_mode()
 
-		self.setFixedSize(650, 580)
+		self.setFixedSize(810, 580)
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemPressed.connect(self.getWords)
 		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
@@ -738,6 +738,17 @@ class ScreenShower(QMainWindow):
 
 		self.set_settings()
 		self.open_window()
+
+
+	
+	def keyPressEvent(self, event):
+		if event.key() == QtCore.Qt.Key_Return:
+			if self.ui.tabs.currentIndex() == 1 and self.ui.quick_bible_search.text().strip() or self.ui.bible_search.text().strip():
+				try: self.showBible()
+				except: pass
+			elif self.ui.tabs.currentIndex() == 0:
+				try: self.showSong()
+				except: pass
 
 
 	def check_stream_mode(self):
@@ -1072,7 +1083,7 @@ class ScreenShower(QMainWindow):
 
 
 	def showSong(self):
-		self.hide_text()
+		# self.hide_text()
 		try:
 			self.screens[1]
 		except:
@@ -1294,6 +1305,8 @@ class ScreenShower(QMainWindow):
 		except:
 			return
 
+		self.lastShown = None
+
 		for s in self.screens:
 			if s.isShowing:
 				s.label.setText("")
@@ -1384,7 +1397,6 @@ class ScreenShower(QMainWindow):
 		
 		self.applySettingsForScreens()
 
-
 		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
 
 		with open("screens_settings.json", "r") as jsonfile:
@@ -1412,14 +1424,21 @@ class ScreenShower(QMainWindow):
 			if not self.screens[i].isShowing and settings[screen]["show_words"]:
 				self.open_window()
 
-			if settings[screen]["stream_mode"]:
+			if settings[screen]["stream_mode"] and settings[screen]["show_words"]:
 				background = settings[screen]["stream_mode_settings"]["background"]
 				styles = "#WordsWindow { background: %s; }" % (background)
+				text_color = settings[screen]["stream_mode_settings"]["text_color"]
+				
 				self.screens[i].setStyleSheet(styles)
-			elif not settings[screen]["stream_mode"]:
+				self.screens[i].label.setStyleSheet(f"color: {text_color};")
+			
+			elif not settings[screen]["stream_mode"] and settings[screen]["show_words"]:
 				background = settings[screen]["simple_mode_settings"]["background"]
 				styles = "#WordsWindow { background: %s; }" % (background)
+				text_color = settings[screen]["simple_mode_settings"]["text_color"]
+				
 				self.screens[i].setStyleSheet(styles)
+				self.screens[i].label.setStyleSheet(f"color: {text_color};")
 
 
 

@@ -3,7 +3,7 @@
         "show_words": false,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 90,
+            "font_size": 100,
             "background": "black",
             "text_color": "white",
             "song_margins": {
@@ -57,11 +57,11 @@
     },
     "screen_1": {
         "show_words": true,
-        "stream_mode": false,
+        "stream_mode": true,
         "simple_mode_settings": {
-            "font_size": 80,
+            "font_size": 90,
             "background": "black",
-            "text_color": "",
+            "text_color": "white",
             "song_margins": {
                 "h": 5,
                 "v": 80
@@ -115,55 +115,55 @@
         "show_words": true,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 90,
+            "font_size": 80,
             "background": "black",
-            "text_color": "white",
+            "text_color": "red",
             "song_margins": {
-                "h": 50,
-                "v": 100
+                "h": 5,
+                "v": 80
             },
             "bible_margins": {
                 "h": 50,
-                "v": 100
+                "v": 202
             },
-            "shadow": true,
-            "shadow_blur_radius": 4,
+            "shadow": false,
+            "shadow_blur_radius": 10,
             "shadow_offset": {
                 "x": 5,
                 "y": 5
             },
-            "font_size_info": 28,
+            "font_size_info": 45,
             "text_color_info": "white",
             "info_position": {
-                "x": 1500,
+                "x": 100,
                 "y": 980
             }
         },
         "stream_mode_settings": {
-            "font_size": 50,
+            "font_size": 80,
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
             "horizontal_margins": 50,
             "shadow": true,
-            "shadow_blur_radius": 4,
+            "shadow_blur_radius": 20,
             "shadow_offset": {
                 "x": 5,
                 "y": 5
             },
             "bible_size": {
-                "width": 600,
+                "width": 900,
                 "height": 400
             },
             "bible_position": {
-                "x": 320,
+                "x": 500,
                 "y": 800
             },
             "font_size_info": 28,
             "text_color_info": "white",
             "info_position": {
-                "x": 1400,
-                "y": 950
+                "x": 1450,
+                "y": 970
             }
         }
     },
@@ -171,51 +171,55 @@
         "show_words": true,
         "stream_mode": false,
         "simple_mode_settings": {
-            "font_size": 90,
+            "font_size": 80,
             "background": "black",
-            "text_color": "white",
-            "margins": {
-                "h": 100,
-                "v": 100
+            "text_color": "red",
+            "song_margins": {
+                "h": 5,
+                "v": 80
             },
-            "shadow": true,
-            "shadow_blur_radius": 4,
+            "bible_margins": {
+                "h": 50,
+                "v": 202
+            },
+            "shadow": false,
+            "shadow_blur_radius": 10,
             "shadow_offset": {
                 "x": 5,
                 "y": 5
             },
-            "font_size_info": 28,
+            "font_size_info": 45,
             "text_color_info": "white",
             "info_position": {
-                "x": 1500,
+                "x": 100,
                 "y": 980
             }
         },
         "stream_mode_settings": {
-            "font_size": 50,
+            "font_size": 80,
             "background": "rgb(0, 255, 0)",
             "text_color": "white",
             "margin_bottom": 160,
             "horizontal_margins": 50,
             "shadow": true,
-            "shadow_blur_radius": 4,
+            "shadow_blur_radius": 20,
             "shadow_offset": {
                 "x": 5,
                 "y": 5
             },
             "bible_size": {
-                "width": 600,
+                "width": 900,
                 "height": 400
             },
             "bible_position": {
-                "x": 320,
+                "x": 500,
                 "y": 800
             },
             "font_size_info": 28,
             "text_color_info": "white",
             "info_position": {
-                "x": 1400,
-                "y": 950
+                "x": 1450,
+                "y": 970
             }
         }
     }
