@@ -94,14 +94,10 @@ class WordsWindow(QMainWindow):
 		screen = "screen_" + str(self.screen_number)
 		if settings[screen]["show_words"]:
 			self.setObjectName("WordsWindow")
-			if settings[screen]["stream_mode"]:
-				background = settings[screen]["stream_mode_settings"]["background"]
-			else:
-				background = settings[screen]["simple_mode_settings"]["background"]
 			styles = """#WordsWindow {
 				background: %s;
 			}
-			""" % (background)
+			""" % (self.passive_background())
 			self.setStyleSheet(styles)
 
 			self.label = smartLabel(self)
@@ -140,6 +136,21 @@ class WordsWindow(QMainWindow):
 
 			self.showFullScreen()
 			self.isShowing = True
+
+
+	def stream_mode(self):
+		with open("screens_settings.json", "r") as jsonfile:
+			settings = json.load(jsonfile)
+		screen = "screen_" + str(self.screen_number)
+		if settings[screen]["stream_mode"]: return True
+		else: return False
+
+
+	def passive_background(self):
+		with open("screens_settings.json", "r") as jsonfile:
+			settings = json.load(jsonfile)
+		screen = "screen_" + str(self.screen_number)
+		return settings[screen]["simple_mode_settings"]["passive_background"]
 
 
 	def setShadow(self):
@@ -185,6 +196,7 @@ class WordsWindow(QMainWindow):
 			self.label.setGraphicsEffect(shadow)
 			self.label_info.setGraphicsEffect(shadow)
 
+	
 	def closeEvent(self, event):
 		self.isShowing = False
 
@@ -740,7 +752,6 @@ class ScreenShower(QMainWindow):
 		self.open_window()
 
 
-	
 	def keyPressEvent(self, event):
 		if event.key() == QtCore.Qt.Key_Return:
 			if self.ui.tabs.currentIndex() == 1 and self.ui.quick_bible_search.text().strip() or self.ui.bible_search.text().strip():
@@ -1083,7 +1094,6 @@ class ScreenShower(QMainWindow):
 
 
 	def showSong(self):
-		# self.hide_text()
 		try:
 			self.screens[1]
 		except:
@@ -1137,6 +1147,9 @@ class ScreenShower(QMainWindow):
 				else:
 					part = self.ui.list_words.currentItem().text
 				self.screens[s].label.setText(part)
+
+				background = settings[screen]["simple_mode_settings"]["background"]
+				self.screens[s].setStyleSheet("#WordsWindow { background: %s; }" % (background))
 
 				font_size = settings[screen]["simple_mode_settings"]["font_size"]
 
@@ -1208,17 +1221,21 @@ class ScreenShower(QMainWindow):
 
 				bible_place = self.list_to_bible_place(self.bible_place)
 				self.screens[s].label_info.setText(bible_place)
-				self.screens[s].label_info.adjustSize()
 
 				info_position = settings[screen]["stream_mode_settings"]["info_position"]
 				self.screens[s].label_info.move(int(info_position["x"]), int(info_position["y"]))
 				font_size = settings[screen]["stream_mode_settings"]["font_size_info"]
 				f = QFont("Arial", font_size)
 				f.setItalic(True)
+				f.setBold(True)
 				self.screens[s].label_info.setFont(f)
+				self.screens[s].label_info.adjustSize()
 
 			elif settings[screen]["show_words"] and not settings[screen]["stream_mode"]:
 				self.screens[s].label.setText(self.ui.bible_verses_list.currentItem().text())
+
+				background = settings[screen]["simple_mode_settings"]["background"]
+				self.screens[s].setStyleSheet("#WordsWindow { background: %s; }" % (background))
 
 				font_size = settings[screen]["simple_mode_settings"]["font_size"]
 				f = QFont("Arial", font_size)
@@ -1245,7 +1262,6 @@ class ScreenShower(QMainWindow):
 
 				bible_place = self.list_to_bible_place(self.bible_place)
 				self.screens[s].label_info.setText(bible_place)
-				self.screens[s].label_info.adjustSize()
 
 				info_position = settings[screen]["simple_mode_settings"]["info_position"]
 				self.screens[s].label_info.move(info_position["x"], info_position["y"])
@@ -1253,10 +1269,8 @@ class ScreenShower(QMainWindow):
 				f = QFont("Arial", font_size)
 				f.setItalic(True)
 				self.screens[s].label_info.setFont(f)
+				self.screens[s].label_info.adjustSize()
 
-
-
-	
 
 	def list_to_bible_place(self, l):
 		res = ""
@@ -1310,10 +1324,9 @@ class ScreenShower(QMainWindow):
 		for s in self.screens:
 			if s.isShowing:
 				s.label.setText("")
-				try:
-					s.label_info.setText("")
-				except:
-					pass
+				if s.label_info.text().strip(): s.label_info.setText("")
+				if not s.stream_mode(): 
+					s.setStyleSheet("#WordsWindow { background: %s; }" % (s.passive_background()))
 
 
 	def set_values(self):
@@ -1336,12 +1349,20 @@ class ScreenShower(QMainWindow):
 		self.ui.checkbox_show_words.setChecked(settings[screen]["show_words"])
 		self.ui.font_size_input.setValue(settings[screen]["simple_mode_settings"]["font_size"])
 		self.ui.text_color_input.setText(settings[screen]["simple_mode_settings"]["text_color"])
+		self.ui.background_color_input.setText(settings[screen]["simple_mode_settings"]["background"])
+		self.ui.passive_background_color_input.setText(settings[screen]["simple_mode_settings"]["passive_background"])
 		self.ui.shadow_checkbox.setChecked(settings[screen]["simple_mode_settings"]["shadow"])
+		self.ui.shadow_blur_radius_input.setValue(settings[screen]["simple_mode_settings"]["shadow_blur_radius"])
+		self.ui.shadow_offset_x_input.setValue(settings[screen]["simple_mode_settings"]["shadow_offset"]["x"])
+		self.ui.shadow_offset_y_input.setValue(settings[screen]["simple_mode_settings"]["shadow_offset"]["y"])
 
 		self.ui.checkbox_stream_mode.setChecked(settings[screen]["stream_mode"])
 		self.ui.font_size_input_stream.setValue(settings[screen]["stream_mode_settings"]["font_size"])
 		self.ui.text_color_input_stream.setText(settings[screen]["stream_mode_settings"]["text_color"])
 		self.ui.shadow_checkbox_stream.setChecked(settings[screen]["stream_mode_settings"]["shadow"])
+		self.ui.shadow_blur_radius_input_stream.setValue(settings[screen]["stream_mode_settings"]["shadow_blur_radius"])
+		self.ui.shadow_offset_x_input_stream.setValue(settings[screen]["stream_mode_settings"]["shadow_offset"]["x"])
+		self.ui.shadow_offset_y_input_stream.setValue(settings[screen]["stream_mode_settings"]["shadow_offset"]["y"])
 
 		
 	def set_settings(self):
@@ -1350,13 +1371,21 @@ class ScreenShower(QMainWindow):
 
 		show_words = bool(self.ui.checkbox_show_words.checkState())
 		text_color = self.ui.text_color_input.text()
+		background = self.ui.background_color_input.text()
+		passive_background = self.ui.passive_background_color_input.text()
 		font_size = self.ui.font_size_input.value()
 		shadow = bool(self.ui.shadow_checkbox.checkState())
+		shadow_blur_radius = self.ui.shadow_blur_radius_input.value()
+		shadow_offset_x = self.ui.shadow_offset_x_input.value()
+		shadow_offset_y = self.ui.shadow_offset_y_input.value()
 
 		stream_mode = bool(self.ui.checkbox_stream_mode.checkState())
 		text_color_stream = self.ui.text_color_input_stream.text()
 		font_size_stream = self.ui.font_size_input_stream.value()
 		shadow_stream = bool(self.ui.shadow_checkbox_stream.checkState())
+		shadow_blur_radius_stream = self.ui.shadow_blur_radius_input_stream.value()
+		shadow_offset_x_stream = self.ui.shadow_offset_x_input_stream.value()
+		shadow_offset_y_stream = self.ui.shadow_offset_y_input_stream.value()
 		
 		# Write setting to json file
 		with open("screens_settings.json", "r") as jsonfile:
@@ -1369,8 +1398,13 @@ class ScreenShower(QMainWindow):
 
 		settings[screen]["show_words"] = show_words
 		settings[screen]["simple_mode_settings"]["text_color"] = text_color
+		settings[screen]["simple_mode_settings"]["background"] = background
+		settings[screen]["simple_mode_settings"]["passive_background"] = passive_background
 		settings[screen]["simple_mode_settings"]["font_size"] = font_size
 		settings[screen]["simple_mode_settings"]["shadow"] = shadow
+		settings[screen]["simple_mode_settings"]["shadow_blur_radius"] = shadow_blur_radius
+		settings[screen]["simple_mode_settings"]["shadow_offset"]["x"] = shadow_offset_x
+		settings[screen]["simple_mode_settings"]["shadow_offset"]["y"] = shadow_offset_y
 
 		if settings[screen]["stream_mode"] != stream_mode: self.streamModeChanged = True
 		else: self.streamModeChanged = False
@@ -1379,6 +1413,9 @@ class ScreenShower(QMainWindow):
 		settings[screen]["stream_mode_settings"]["text_color"] = text_color_stream
 		settings[screen]["stream_mode_settings"]["font_size"] = font_size_stream
 		settings[screen]["stream_mode_settings"]["shadow"] = shadow_stream
+		settings[screen]["stream_mode_settings"]["shadow_blur_radius"] = shadow_blur_radius_stream
+		settings[screen]["stream_mode_settings"]["shadow_offset"]["x"] = shadow_offset_x_stream
+		settings[screen]["stream_mode_settings"]["shadow_offset"]["y"] = shadow_offset_y_stream
 
 		# Write to file
 		with open("screens_settings.json", "w") as jsonfile:
@@ -1393,7 +1430,7 @@ class ScreenShower(QMainWindow):
 				self.showBible()
 		elif self.streamModeChanged:
 			self.hide_text()
-			self.getWords()
+			if self.lastShown: self.getWords()
 		
 		self.applySettingsForScreens()
 
@@ -1431,14 +1468,23 @@ class ScreenShower(QMainWindow):
 				
 				self.screens[i].setStyleSheet(styles)
 				self.screens[i].label.setStyleSheet(f"color: {text_color};")
+
+				if settings[screen]["stream_mode_settings"]["shadow"]: self.screens[i].setShadow()
 			
 			elif not settings[screen]["stream_mode"] and settings[screen]["show_words"]:
-				background = settings[screen]["simple_mode_settings"]["background"]
-				styles = "#WordsWindow { background: %s; }" % (background)
 				text_color = settings[screen]["simple_mode_settings"]["text_color"]
+				if self.lastShown:
+					background = settings[screen]["simple_mode_settings"]["background"]
+					styles = "#WordsWindow { background: %s; }" % (background)
+					self.screens[i].setStyleSheet(styles)
+				else:
+					passive_background = settings[screen]["simple_mode_settings"]["passive_background"]
+					styles = "#WordsWindow { background: %s; }" % (passive_background)
+					self.screens[i].setStyleSheet(styles)
 				
-				self.screens[i].setStyleSheet(styles)
 				self.screens[i].label.setStyleSheet(f"color: {text_color};")
+
+				if settings[screen]["simple_mode_settings"]["shadow"]: self.screens[i].setShadow()
 
 
 

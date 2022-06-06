@@ -5,6 +5,7 @@
         "simple_mode_settings": {
             "font_size": 100,
             "background": "black",
+            "passive_background": "rgb(0, 255, 0)",
             "text_color": "white",
             "song_margins": {
                 "h": 50,
@@ -61,6 +62,7 @@
         "simple_mode_settings": {
             "font_size": 90,
             "background": "black",
+            "passive_background": "rgb(0, 255, 0)",
             "text_color": "white",
             "song_margins": {
                 "h": 5,
@@ -90,10 +92,10 @@
             "margin_bottom": 160,
             "horizontal_margins": 50,
             "shadow": true,
-            "shadow_blur_radius": 20,
+            "shadow_blur_radius": 10,
             "shadow_offset": {
-                "x": 5,
-                "y": 5
+                "x": 6,
+                "y": 6
             },
             "bible_size": {
                 "width": 900,
@@ -103,7 +105,7 @@
                 "x": 500,
                 "y": 800
             },
-            "font_size_info": 28,
+            "font_size_info": 40,
             "text_color_info": "white",
             "info_position": {
                 "x": 1450,
