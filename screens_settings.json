@@ -62,7 +62,7 @@
         "simple_mode_settings": {
             "font_size": 90,
             "background": "black",
-            "passive_background": "rgb(0, 255, 0)",
+            "passive_background": "black",
             "text_color": "white",
             "song_margins": {
                 "h": 5,
@@ -92,7 +92,7 @@
             "margin_bottom": 160,
             "horizontal_margins": 50,
             "shadow": true,
-            "shadow_blur_radius": 10,
+            "shadow_blur_radius": 20,
             "shadow_offset": {
                 "x": 6,
                 "y": 6

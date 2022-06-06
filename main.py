@@ -15,6 +15,7 @@ from addSongWindow import Ui_addSongWindow
 from EditSongWindow import Ui_EditSongWindow
 from mybible_handler import Mybible
 from Song import Song
+from ConstructorFrame import ConstructorFrame
 
 import sqlite3
 import json
@@ -750,6 +751,8 @@ class ScreenShower(QMainWindow):
 
 		self.set_settings()
 		self.open_window()
+
+		self.constructor_frame = ConstructorFrame(self.ui.simple_mode_settings_tab)
 
 
 	def keyPressEvent(self, event):
