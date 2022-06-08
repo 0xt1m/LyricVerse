@@ -94,11 +94,13 @@ class WordsWindow(QMainWindow):
 		self.isShowing = False
 		screen = "screen_" + str(self.screen_number)
 		if settings[screen]["show_words"]:
+			if settings[screen]["stream_mode"]: background = "rgb(0, 255, 0)"
+			else: background = self.passive_background()
 			self.setObjectName("WordsWindow")
 			styles = """#WordsWindow {
 				background: %s;
 			}
-			""" % (self.passive_background())
+			""" % (background)
 			self.setStyleSheet(styles)
 
 			self.label = smartLabel(self)
@@ -753,6 +755,10 @@ class ScreenShower(QMainWindow):
 		self.open_window()
 
 		self.constructor_frame = ConstructorFrame(self.ui.simple_mode_settings_tab)
+
+		self.constructor_frame.label.setText("Hello world!\n abla bla blasdfjdasoifj")
+		self.constructor_frame.label.setAlignment(QtCore.Qt.AlignCenter)
+		self.constructor_frame.label.moveToCenter()
 
 
 	def keyPressEvent(self, event):

@@ -58,7 +58,7 @@
     },
     "screen_1": {
         "show_words": true,
-        "stream_mode": true,
+        "stream_mode": false,
         "simple_mode_settings": {
             "font_size": 90,
             "background": "black",
@@ -73,7 +73,7 @@
                 "v": 202
             },
             "shadow": false,
-            "shadow_blur_radius": 10,
+            "shadow_blur_radius": 60,
             "shadow_offset": {
                 "x": 5,
                 "y": 5
