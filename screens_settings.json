@@ -1,11 +1,11 @@
 {
     "screen_0": {
-        "show_words": false,
+        "show_words": true,
         "stream_mode": false,
         "simple_mode_settings": {
             "font_size": 100,
-            "background": "black",
-            "passive_background": "rgb(0, 255, 0)",
+            "background": "pink",
+            "passive_background": "black",
             "text_color": "white",
             "song_margins": {
                 "h": 50,
@@ -15,17 +15,17 @@
                 "h": 50,
                 "v": 100
             },
-            "shadow": true,
+            "shadow": false,
             "shadow_blur_radius": 4,
             "shadow_offset": {
                 "x": 5,
                 "y": 5
             },
-            "font_size_info": 28,
+            "font_size_info": 32,
             "text_color_info": "white",
             "info_position": {
-                "x": 1500,
-                "y": 980
+                "x": 50,
+                "y": 830
             }
         },
         "stream_mode_settings": {

@@ -686,7 +686,6 @@ class ScreenShower(QMainWindow):
 
 	def init_ui(self):
 		self.anyStreamMode = self.check_stream_mode()
-
 		self.setFixedSize(810, 580)
 		self.ui.song_search.textChanged.connect(self.searchSong)
 		self.ui.list_songs.itemPressed.connect(self.getWords)
@@ -758,7 +757,7 @@ class ScreenShower(QMainWindow):
 
 		self.constructor_frame.label.setText("Hello world!\n abla bla blasdfjdasoifj")
 		self.constructor_frame.label.setAlignment(QtCore.Qt.AlignCenter)
-		self.constructor_frame.label.moveToCenter()
+		# self.constructor_frame.label.moveToCenter()
 
 
 	def keyPressEvent(self, event):
@@ -1171,10 +1170,10 @@ class ScreenShower(QMainWindow):
 				screen_center_x = screen_size.width() / 2
 				screen_center_y = screen_size.height() / 2
 				self.screens[s].label.setGeometry(
-					screen_center_x - label_center_x,
-					screen_center_y - label_center_y,
-					label_width,
-					label_height
+					int(screen_center_x - label_center_x),
+					int(screen_center_y - label_center_y),
+					int(label_width),
+					int(label_height)
 				)
 				self.screens[s].setShadow()
 				# Set fit font
@@ -1260,10 +1259,10 @@ class ScreenShower(QMainWindow):
 				screen_center_x = screen_size.width() / 2
 				screen_center_y = screen_size.height() / 2
 				self.screens[s].label.setGeometry(
-					screen_center_x - label_center_x,
-					screen_center_y - label_center_y,
-					label_width,
-					label_height
+					int(screen_center_x - label_center_x),
+					int(screen_center_y - label_center_y),
+					int(label_width),
+					int(label_height)
 				)
 				self.screens[s].setShadow()
 				# Set fit font
@@ -1305,8 +1304,8 @@ class ScreenShower(QMainWindow):
 
 	def close_window(self, number=None):
 		if not number:
-			try: self.screens[1]
-			except: return
+			# try: self.screens[1]
+			# except: return
 
 			for s in self.screens:
 				try: s.close()
