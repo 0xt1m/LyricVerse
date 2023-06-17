@@ -29,24 +29,16 @@ import threading
 import requests
 import urllib.request
 
-def internet_on():
-	try:
-		urllib.request.urlopen('https://localhost:8000', timeout=1)
-		return True
-	except urllib.request.URLError as err: 
-		return False
 
 def run_updater():
 	os.system("python3 updater.py")
 
 c_version = open("version.txt", "r").read()
-if internet_on():
-	n_version = requests.get("http://localhost:8000/new_version").json()['latest_version']
-	if c_version != n_version:
-		t = threading.Thread(target=run_updater)
-		t.start()
-		quit()
-
+n_version = requests.get("http://localhost:8000/new_version").json()['latest_version']
+if c_version != n_version:
+	t = threading.Thread(target=run_updater)
+	t.start()
+	quit()
 
 class smartLabel(QLabel):
 	def __init__(self, screen):
