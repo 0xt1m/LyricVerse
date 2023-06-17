@@ -23,6 +23,7 @@ class LabelForConstructor(QLabel):
 		self.adjustSize()
 		frame_center_x = self.parent.width() / 2
 		frame_center_y = self.parent.height() / 2
+		print(frame_center_y, frame_center_x)
 		self.move(frame_center_x - self.width() / 2, frame_center_y - self.height() / 2)
 
 
