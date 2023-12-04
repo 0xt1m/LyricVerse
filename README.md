@@ -18,6 +18,5 @@ There is nothing that can limit you to do something.
 <li><i>Chromakey</i></li>
 <li><i>Change active and passive background</i></li>
 <li><i>Show different patterns on different screens</i></li>
-<li><i>etc.</i></li>
 </ul>
 
