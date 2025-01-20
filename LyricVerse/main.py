@@ -1,6 +1,6 @@
 from design import Ui_MainWindow
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -9,80 +9,60 @@ from PyQt5.QtWidgets import *
 from addSongbook import AddSongbookWindow
 from addSongWindow import Ui_addSongWindow
 from EditSongWindow import Ui_EditSongWindow
+
 from mybible_handler import Mybible
 from Song import Song
+
 from ConstructorFrame import ConstructorFrame
 
 import sqlite3
 import json
-
 import sys
-import time
-import string
-
-import os
-import threading
-import requests
-import urllib.request
-
-
-def run_updater():
-	os.system("python3 updater.py")
-
-c_version = open("version.txt", "r").read()
-try:
-	n_version = requests.get("http://localhost:8000/new_version").json()['latest_version']
-except:
-	n_version = ""
-if n_version and c_version != n_version:
-	t = threading.Thread(target=run_updater)
-	t.start()
-	quit()
 
 class smartLabel(QLabel):
 	def __init__(self, screen):
 		super().__init__(screen)
 
 	def ownWordWrap(self, max_font_size=150):
+		def calculate_text_size(text, font):
+			"""Helper to calculate height and width of given text with a specific font."""
+			self.setFont(font)
+			metrics = self.fontMetrics()
+			height = metrics.boundingRect(text).height()
+			lines = len(text.split("\n"))
+			return height * lines
+
 		font_size = 2
-		font = QFont("Arial", font_size)
-		self.setFont(font)
-
-		one_line_height = self.fontMetrics().boundingRect(self.text()).height()
-		count_of_lines = len(self.text().split("\n"))
-		current_height = one_line_height * count_of_lines
-
 		ready_text = ""
+		while font_size <= max_font_size:
+			# Set font size
+			font = QFont("Arial", font_size)
+			font.setBold(True)
+			self.setFont(font)
 
-		while current_height < self.size().height() - (font_size + (font_size / 2)) and font_size <= max_font_size:
+			# Recalculate wrapped text
 			words = self.text().split()
 			ready_text = ""
 			active_text = ""
-			for w in range(len(words)):
-				current_width = self.fontMetrics().boundingRect(active_text + words[w] + " ").width()
-				if current_width > self.size().width() - (font_size + (font_size / 2)):
+			for word in words:
+				current_width = self.fontMetrics().boundingRect(active_text + word + " ").width()
+				if current_width > self.size().width():
 					ready_text += active_text.strip() + "\n"
 					active_text = ""
-				active_text += words[w] + " "
-			ready_text += active_text
+				active_text += word + " "
+			ready_text += active_text.strip()
+
+			# Check if text fits
+			current_height = calculate_text_size(ready_text, font)
+			if current_height > self.size().height():
+				font_size -= 2  # Step back to the previous valid font size
+				break
 
 			font_size += 2
-			new_font = QFont("Arial", font_size)
-			new_font.setBold(True)
-			self.setFont(new_font)
 
-			one_line_height = self.fontMetrics().boundingRect(ready_text).height()
-			count_of_lines = len(ready_text.split("\n"))
-			current_height = one_line_height * count_of_lines
-			while current_height > self.size().height():				
-				font_size -= 2
-				new_font = QFont("Arial", font_size)
-				new_font.setBold(True)
-				self.setFont(new_font)
-				
-				one_line_height = self.fontMetrics().boundingRect(ready_text).height()
-				current_height = one_line_height * count_of_lines
-
+		# Apply final text and font
+		font.setPointSize(font_size)
+		self.setFont(font)
 		self.setText(ready_text.strip())
 
 
@@ -146,7 +126,7 @@ class WordsWindow(QMainWindow):
 			self.setShadow()
 
 			self.quitSc = QShortcut(QKeySequence('Esc'), self)
-			self.quitSc.activated.connect(ScreenShower.hide_text)
+			self.quitSc.activated.connect(LyricVerse.hide_text)
 
 			monitor = QDesktopWidget().screenGeometry(self.screen_number)
 			self.move(monitor.left(), monitor.top())
@@ -690,7 +670,7 @@ class EditSongWindow(QMainWindow):
 			self.close()
 
 
-class ScreenShower(QMainWindow):
+class LyricVerse(QMainWindow):
 	def __init__(self):
 		super().__init__()
 		self.ui = Ui_MainWindow()
@@ -1512,7 +1492,11 @@ class ScreenShower(QMainWindow):
 
 if __name__ == "__main__":
 	app = QtWidgets.QApplication([])
-	application = ScreenShower()
+	application = LyricVerse()
 	application.show()
 
 	sys.exit(app.exec())
+
+
+
+# My updater is gonna mess up all the settings and songbooks (Maybe a good solution would be to download just the exe file instead of the whole app archive)

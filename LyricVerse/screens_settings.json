@@ -1,6 +1,6 @@
 {
     "screen_0": {
-        "show_words": false,
+        "show_words": true,
         "stream_mode": false,
         "simple_mode_settings": {
             "font_size": 100,

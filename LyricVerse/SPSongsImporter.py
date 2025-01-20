@@ -4,7 +4,7 @@ import json
 from Song import Song
 
 
-# Function for add or change records in json songbooks
+# Function for adding or changing records in json songbooks
 def addSongbookToJson(filename, title="Songbook"):
 	title = title.replace(".db", "")
 	with open("Songbooks/songbooks.json", "r") as jsonfile:
@@ -19,7 +19,6 @@ def addSongbookToJson(filename, title="Songbook"):
 
 
 def importSongsFromSP(filename, title):
-	# Function for remove duplication song numbers from songs
 	def remove_duplicates(songs):
 		songs_len = len(songs)
 		i = 0
@@ -34,15 +33,11 @@ def importSongsFromSP(filename, title):
 			i += 1
 		return songs
 
-	# global filename
-
-	# import all songs from softprojector
 	connection = sqlite3.connect("Songbooks/" + filename)
 	cursor = connection.cursor()
 
 	all_songs = cursor.execute("SELECT * FROM Songs").fetchall()
 
-	# Create new database for ScreenShower
 	connection = sqlite3.connect("Songbooks/" + filename.replace(".sps", ".db"))
 	cursor = connection.cursor()
 
@@ -56,7 +51,7 @@ def importSongsFromSP(filename, title):
 	# Remove duplicates from these songs
 	all_songs = remove_duplicates(all_songs)
 
-	# Append songs to new database
+	# Add songs to new database
 	for song in range(len(all_songs)):
 		song = Song(all_songs[song][0], all_songs[song][1], all_songs[song][6])
 		song.reformat_text_to_json()
