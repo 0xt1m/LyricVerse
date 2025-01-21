@@ -35,8 +35,10 @@ class LyricVerse(QMainWindow):
 		self.ui.list_words.itemSelectionChanged.connect(self.show_song)
 		self.ui.list_words.itemPressed.connect(self.show_song)
 		self.ui.bible_verses_list.itemPressed.connect(self.show_bible)
+		
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
+		
 		self.ui.screensCB.currentTextChanged.connect(self.set_values)
 		self.ui.btn_save.clicked.connect(self.set_settings)
 		self.ui.available_songbooks_element.currentTextChanged.connect(self.get_songs_from_songbook)
@@ -451,7 +453,7 @@ class LyricVerse(QMainWindow):
 
 	def show_song(self):
 		try:
-			self.screens[1]
+			self.screens[0]
 		except:
 			self.open_window()
 
@@ -473,6 +475,7 @@ class LyricVerse(QMainWindow):
 			if self.screens[s].isShowing == False:
 				self.open_window()
 
+			self.screens[s].label_info.setText("")
 			screen_size = QDesktopWidget().availableGeometry(s)
 			screen = "screen_" + str(s)
 			if settings[screen]["stream_mode"] and settings[screen]["show_words"]:
@@ -490,8 +493,10 @@ class LyricVerse(QMainWindow):
 				label_center_x = label_width / 2
 				margin_bottom = settings[screen]["stream_mode_settings"]["margin_bottom"]
 				self.screens[s].label.setGeometry(
-					screen_center_x - label_center_x, screen_size.height() - margin_bottom,
-					label_width, one_line_height
+					int(screen_center_x - label_center_x),
+					int(screen_size.height() - margin_bottom),
+					int(label_width),
+					int(one_line_height)
 				)
 				self.screens[s].setShadow()
 				self.screens[s].label.ownWordWrap(font_size)
@@ -530,7 +535,7 @@ class LyricVerse(QMainWindow):
 
 	def show_bible(self):
 		try:
-			self.screens[1]
+			self.screens[0]
 		except:
 			self.open_window()
 
@@ -566,10 +571,10 @@ class LyricVerse(QMainWindow):
 				label_center_x = bible_size["width"] / 2
 				label_center_y = bible_size["height"] / 2
 				self.screens[s].label.setGeometry(
-					bible_position["x"] - label_center_x,
-					bible_position["y"] - label_center_y,
-					bible_size["width"],
-					bible_size["height"]
+					int(bible_position["x"] - label_center_x),
+					int(bible_position["y"] - label_center_y),
+					int(bible_size["width"]),
+					int(bible_size["height"])
 				)
 
 				self.screens[s].setShadow()
@@ -654,7 +659,7 @@ class LyricVerse(QMainWindow):
 				try: s.close()
 				except: pass
 
-			try: self.addsong.close()
+			try: self.add_song_window.close()
 			except: pass
 
 			try: self.add_songbook_window.close()
@@ -666,7 +671,7 @@ class LyricVerse(QMainWindow):
 
 	def hide_text(self):
 		try:
-			self.screens[1]
+			self.screens[0]
 		except:
 			return
 

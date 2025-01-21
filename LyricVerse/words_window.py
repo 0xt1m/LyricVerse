@@ -35,7 +35,7 @@ class WordsWindow(QMainWindow):
 			if settings[screen]["stream_mode"]:
 				mode = "stream_mode_settings"
 			else:
-				mode = "simple_mode_settings"
+				mode = "default_mode_settings"
 
 			font_size = settings[screen][mode]["font_size"]
 			text_color = settings[screen][mode]["text_color"]
@@ -78,7 +78,7 @@ class WordsWindow(QMainWindow):
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
 		screen = "screen_" + str(self.screen_number)
-		return settings[screen]["simple_mode_settings"]["passive_background"]
+		return settings[screen]["default_mode_settings"]["passive_background"]
 
 
 	def setShadow(self):
@@ -89,7 +89,7 @@ class WordsWindow(QMainWindow):
 		if settings[screen]["stream_mode"]:
 			mode = "stream_mode_settings"
 		else:
-			mode = "simple_mode_settings"
+			mode = "default_mode_settings"
 
 		if settings[screen][mode]["shadow"]:
 			shadow = QGraphicsDropShadowEffect()

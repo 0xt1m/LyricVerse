@@ -1,10 +1,10 @@
 {
     "screen_0": {
-        "show_words": false,
+        "show_words": true,
         "stream_mode": false,
         "default_mode_settings": {
             "font_size": 100,
-            "background": "pink",
+            "background": "black",
             "passive_background": "black",
             "text_color": "white",
             "song_margins": {
