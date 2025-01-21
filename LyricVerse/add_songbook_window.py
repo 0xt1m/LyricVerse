@@ -12,13 +12,13 @@ class AddSongbookWindow(QMainWindow):
 	def __init__(self):
 		super().__init__()
 		self.resize(420, 500)
-		self.setWindowTitle("Add songbook")
+		self.setWindowTitle("Додати пісенник")
 
 		self.file = FileLabel(self)
 		self.file.mousePressEvent = self.browseFiles
 
 		self.label = QLabel(self)
-		self.label.setText("Enter songbook title:")
+		self.label.setText("Введіть назву пісенника:")
 		self.label.adjustSize()
 		self.label.move(10, 10)
 
@@ -26,7 +26,7 @@ class AddSongbookWindow(QMainWindow):
 		self.songbook_title_input.setPlaceholderText("Євангельські пісні")
 		self.songbook_title_input.setGeometry(10, 30, 200, 20)
 
-		self.add_btn = QPushButton("Save", self)
+		self.add_btn = QPushButton("Зберегти", self)
 		self.add_btn.setGeometry(10, 465, 400, 30)
 		self.add_btn.clicked.connect(self.add_songbook)
 
@@ -36,7 +36,7 @@ class AddSongbookWindow(QMainWindow):
 
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
+		msg.setWindowTitle("Помилка")
 
 		file_name = QFileDialog.getOpenFileName(self, 'Open file', './')
 		file = QFileInfo(file_name[0])
@@ -44,19 +44,19 @@ class AddSongbookWindow(QMainWindow):
 			self.file.setText(file.fileName())
 			self.file.setFont(font)
 		else:
-			msg.setText("We can't recognize type of this file")	
+			msg.setText("Неможливо розпізнати формати файлу")	
 			msg.exec_()
 
 
 	def add_songbook(self):
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
+		msg.setWindowTitle("Помилка")
 		
 		if self.songbook_title_input.text().strip() == "":
-			msg.setText("Songbook must to have any title")	
+			msg.setText("Не може бути пісенник без назви!")	
 			msg.exec_()
-		elif self.file.text() == "Drag the file here":
+		elif self.file.text() == "Файл з піснями":
 			filename = self.songbook_title_input.text().strip() + ".db"
 			connection = sqlite3.connect("Songbooks/" + filename)
 			cursor = connection.cursor()
@@ -81,7 +81,7 @@ class FileLabel(QLabel):
 		self.setAcceptDrops(True)
 		self.resize(400, 400)
 		self.move(10, 60)
-		self.setText("Drag the file here")
+		self.setText("Файл з піснями")
 		self.setAlignment(QtCore.Qt.AlignCenter)
 		self.setStyleSheet("border: 2px dashed black;")
 		font = QFont("Arial", 30)
@@ -108,13 +108,13 @@ class FileLabel(QLabel):
 
 		msg = QMessageBox()
 		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
+		msg.setWindowTitle("Помилка")
 		if event.mimeData().hasUrls():
 			event.setDropAction(Qt.CopyAction)
 			event.accept()
 
 			if len(event.mimeData().urls()) > 1:
-				msg.setText("You can drag only one file!")	
+				msg.setText("Можна перетягувати тільки один файл!")	
 				msg.exec_()
 			else:
 				url = event.mimeData().urls()[0]
@@ -124,7 +124,7 @@ class FileLabel(QLabel):
 						self.setText(file.fileName())
 						self.setFont(font)
 					else:
-						msg.setText("We can't recognize type of this file")	
+						msg.setText("Неможливо розпізнати формат файлу!")	
 						msg.exec_()
 				
 		else:

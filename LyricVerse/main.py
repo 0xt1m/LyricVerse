@@ -39,7 +39,7 @@ class LyricVerse(QMainWindow):
 		self.quitSc.activated.connect(self.hide_text)
 		self.ui.screensCB.currentTextChanged.connect(self.set_values)
 		self.ui.btn_save.clicked.connect(self.set_settings)
-		self.ui.av_songbooks.currentTextChanged.connect(self.get_songs_from_songbook)
+		self.ui.available_songbooks_element.currentTextChanged.connect(self.get_songs_from_songbook)
 		self.ui.av_translations.currentTextChanged.connect(self.set_bible)
 		self.ui.bible_books_list.itemSelectionChanged.connect(self.set_chapters)
 		self.ui.bible_chapters_list.itemSelectionChanged.connect(self.get_verses)
@@ -70,7 +70,7 @@ class LyricVerse(QMainWindow):
 
 		self.songbook_names = list(self.songbooks.keys())
 		for s in self.songbook_names:
-			self.ui.av_songbooks.addItem(s)
+			self.ui.available_songbooks_element.addItem(s)
 
 		self.get_songs_from_songbook()
 
@@ -131,32 +131,34 @@ class LyricVerse(QMainWindow):
 
 		self.songbook_names = list(self.songbooks.keys())
 
-		self.ui.av_songbooks.currentTextChanged.disconnect(self.get_songs_from_songbook)
-		self.ui.av_songbooks.clear()
+		self.ui.available_songbooks_element.currentTextChanged.disconnect(self.get_songs_from_songbook)
+		self.ui.available_songbooks_element.clear()
 		for s in self.songbook_names:
-			self.ui.av_songbooks.addItem(s)
-		self.ui.av_songbooks.currentTextChanged.connect(self.get_songs_from_songbook)
+			self.ui.available_songbooks_element.addItem(s)
+		self.ui.available_songbooks_element.currentTextChanged.connect(self.get_songs_from_songbook)
 
 		self.get_songs_from_songbook()
 
 
 	def new_song(self):
-		self.addsong = AddSongWindow(self.ui.av_songbooks.currentText())
-		self.addsong.show()
-		self.addsong.closeEvent = self.updateSongList
+		self.add_song_window = AddSongWindow(self.ui.available_songbooks_element.currentText())
+		self.add_song_window.show()
+		self.add_song_window.closeEvent = self.updateSongList
+
+
 
 
 	def edit_song(self):
 		if self.song != None:
-			self.editsong = EditSongWindow(self.ui.av_songbooks.currentText(), self.song)
+			self.editsong = EditSongWindow(self.ui.available_songbooks_element.currentText(), self.song)
 			self.editsong.show()
 			self.editsong.closeEvent = self.updateSongList
 
 		else:
 			msg = QMessageBox()
 			msg.setIcon(QMessageBox.Warning)
-			msg.setWindowTitle("Error")
-			msg.setText("You have to select song that you want to edit!")
+			msg.setWindowTitle("Помилка")
+			msg.setText("Ви не вибрали пісню яку хочете редагувати!")
 			msg.exec_()
 
 
@@ -164,6 +166,7 @@ class LyricVerse(QMainWindow):
 		self.get_songs_from_songbook()
 		if self.song:
 			self.ui.list_songs.setCurrentRow(self.song.number - 1)
+		
 		self.search_song()
 
 
@@ -288,23 +291,26 @@ class LyricVerse(QMainWindow):
 		try: self.ui.list_words.itemSelectionChanged.disconnect(self.show_song)
 		except: pass
 
-		if self.ui.av_songbooks.currentText():
-			current_songbook = self.ui.av_songbooks.currentText()
-			self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[current_songbook]["filename"]}')
-			self.cursor = self.connection.cursor()
-			song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
+		try:
+			if self.ui.available_songbooks_element.currentText():
+				current_songbook = self.ui.available_songbooks_element.currentText()
+				self.connection = sqlite3.connect(f'Songbooks/{self.songbooks[current_songbook]["filename"]}')
+				self.cursor = self.connection.cursor()
+				song_names = self.cursor.execute("SELECT id, title FROM Songs").fetchall()
 
-			self.ui.list_songs.clear()
-			self.ui.list_words.clear()
-			for i in song_names:
-				self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
+				self.ui.list_songs.clear()
+				self.ui.list_words.clear()
+				for i in song_names:
+					self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
 
-			self.ui.list_songs.itemSelectionChanged.connect(self.get_words)
-			self.ui.list_words.itemSelectionChanged.connect(self.show_song)
+				self.ui.list_songs.itemSelectionChanged.connect(self.get_words)
+				self.ui.list_words.itemSelectionChanged.connect(self.show_song)
+		except Exception as e:
+			print(e)
 
 
 	def get_song(self, song_number):
-		filename = self.songbooks[self.ui.av_songbooks.currentText()]["filename"]
+		filename = self.songbooks[self.ui.available_songbooks_element.currentText()]["filename"]
 		db = sqlite3.connect(f"Songbooks/{filename}")
 		sql = db.cursor()
 		song = sql.execute(f"SELECT * FROM Songs WHERE id='{song_number}'").fetchall()
@@ -316,12 +322,14 @@ class LyricVerse(QMainWindow):
 
 
 	def get_words(self):
-		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.get_words)
-		except: pass
+		try:
+			self.ui.list_songs.itemSelectionChanged.disconnect(self.get_words)
+		except:
+			pass
+		
 		self.ui.list_words.itemSelectionChanged.disconnect(self.show_song)
 
 		song_number = int(self.ui.list_songs.currentItem().text().split()[0])
-
 		self.song = self.get_song(song_number)
 		song_text = json.loads(self.song.song_text)
 		song_couplets = song_text["Couplets"]
@@ -330,58 +338,59 @@ class LyricVerse(QMainWindow):
 
 		self.ui.list_words.clear()
 
+		song_parts = []
+
 		if self.anyStreamMode:
-			song_parts = []
+			# Build song_parts for stream mode with a chorus after each couplet
 			for couplet in song_couplets:
 				song_parts.append(couplet)
-				if song_chorus: song_parts.append(song_chorus)
-			for b in song_bridges: song_parts.insert(b["index"], b["text"])
-				
-			self.song_lines = []
-			for part in range(len(song_parts)):
-				part_lines = song_parts[part].split("\n")
-				for line in part_lines: self.song_lines.append(SongLine(line, song_parts[part], part))
+				if song_chorus: 
+					song_parts.append(song_chorus)
+			for b in song_bridges:
+				song_parts.insert(b["index"], b["text"])
+
+			self.song_lines = [
+				SongLine(line, song_parts[part], part) 
+				for part in range(len(song_parts)) 
+				for line in song_parts[part].split("\n")
+			]
 
 			for line in self.song_lines:
 				line_custom_item = CustomItem(line.text, "part")
 				line_item = SongItem(line.text, "part")
-				line_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
+				line_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 				line_item.setSizeHint(line_custom_item.sizeHint())
 
 				self.ui.list_words.addItem(line_item)
 				self.ui.list_words.setItemWidget(line_item, line_custom_item)
-		
-		elif not self.anyStreamMode:
-			for i in song_couplets:
-				couplet_custom_item = CustomItem(i, "couplet")
-				couplet_item = SongItem(i, "couplet")
-				couplet_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
-				couplet_item.setSizeHint(couplet_custom_item.sizeHint())
 
-				self.ui.list_words.addItem(couplet_item)
-				self.ui.list_words.setItemWidget(couplet_item, couplet_custom_item)
-				if song_chorus != "":
-					chorus_custom_item = CustomItem(song_chorus, "chorus")
-					chorus_item = SongItem(song_chorus, "chorus")
-					chorus_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
-					chorus_item.setSizeHint(chorus_custom_item.sizeHint())
+		else:
+			# Add couplets and chorus after each one in non-stream mode
+			for couplet in song_couplets:
+				self.add_song_item(couplet, "couplet")
+				if song_chorus:
+					self.add_song_item(song_chorus, "chorus")
 
-					self.ui.list_words.addItem(chorus_item)
-					self.ui.list_words.setItemWidget(chorus_item, chorus_custom_item)
-			if song_bridges:
-				for b in song_bridges:
-					bridge_custom_item = CustomItem(b["text"], "bridge")
-					bridge_item = SongItem(b["text"], "bridge")
-					bridge_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
-					bridge_item.setSizeHint(bridge_custom_item.sizeHint())
-
-					self.ui.list_words.insertItem(b["index"], bridge_item)
-					self.ui.list_words.setItemWidget(bridge_item, bridge_custom_item)
+			for b in song_bridges:
+				self.add_song_item(b["text"], "bridge", b["index"])
 
 		self.ui.list_words.setCurrentRow(0)
 
 		self.ui.list_words.itemSelectionChanged.connect(self.show_song)
 		self.ui.list_songs.itemSelectionChanged.connect(self.get_words)
+
+	def add_song_item(self, text, item_type, index=None):
+		custom_item = CustomItem(text, item_type)
+		item = SongItem(text, item_type)
+		item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+		item.setSizeHint(custom_item.sizeHint())
+
+		if index is not None:
+			self.ui.list_words.insertItem(index, item)
+		else:
+			self.ui.list_words.addItem(item)
+		
+		self.ui.list_words.setItemWidget(item, custom_item)
 
 
 	def search_song(self):
@@ -416,7 +425,7 @@ class LyricVerse(QMainWindow):
 				song_text = ""
 				for c in song_text_json["Couplets"]:
 					song_text += c + "\n\n"
-				song_text += song_text_json["chorus"]
+				song_text += song_text_json["Chorus"]
 				if checkIn(song_text, req):
 					res.append(s)
 
