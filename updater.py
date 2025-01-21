@@ -2,8 +2,8 @@ import os
 import requests
 
 # Configuration
-SERVER_URL = "http://localhost:8000/LyricVerse.exe"
-VERSION_URL = "http://localhost:8000/version.txt"
+SERVER_URL = "http://18.223.188.46:8484/LyricVerse.exe"
+VERSION_URL = "http://18.223.188.46:8484/version.txt"
 DOWNLOAD_PATH = "./LyricVerse.exe"
 OLD_APP_PATH = "./LyricVerse/LyricVerse.exe"
 LOCAL_VERSION_FILE = "./LyricVerse/version.txt"
@@ -21,7 +21,7 @@ def check_internet_connection():
 # Step 2: Check version
 def needs_update():
     global server_version
-    
+
     try:
         response = requests.get(VERSION_URL, timeout=2)
         if response.status_code == 200:
