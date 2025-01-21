@@ -1,8 +1,8 @@
 {
     "screen_0": {
-        "show_words": true,
+        "show_words": false,
         "stream_mode": false,
-        "simple_mode_settings": {
+        "default_mode_settings": {
             "font_size": 100,
             "background": "pink",
             "passive_background": "black",
@@ -59,7 +59,7 @@
     "screen_1": {
         "show_words": true,
         "stream_mode": false,
-        "simple_mode_settings": {
+        "default_mode_settings": {
             "font_size": 90,
             "background": "black",
             "passive_background": "black",
@@ -116,7 +116,7 @@
     "screen_2": {
         "show_words": true,
         "stream_mode": false,
-        "simple_mode_settings": {
+        "default_mode_settings": {
             "font_size": 80,
             "background": "black",
             "text_color": "red",
@@ -172,7 +172,7 @@
     "screen_3": {
         "show_words": true,
         "stream_mode": false,
-        "simple_mode_settings": {
+        "default_mode_settings": {
             "font_size": 80,
             "background": "black",
             "text_color": "red",

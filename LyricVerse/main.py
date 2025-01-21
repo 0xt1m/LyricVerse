@@ -1,673 +1,22 @@
-from design import Ui_MainWindow
-
-from PyQt5 import QtWidgets, QtCore
+from ui_main_window import Ui_MainWindow
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from addSongbook import AddSongbookWindow
-from addSongWindow import Ui_addSongWindow
-from EditSongWindow import Ui_EditSongWindow
+from add_songbook_window import AddSongbookWindow
+from add_song_window import AddSongWindow
+from edit_song_window import EditSongWindow
+
+from words_window import WordsWindow
 
 from mybible_handler import Mybible
-from Song import Song
-
-from ConstructorFrame import ConstructorFrame
+from song import Song, SongItem, SongLine
+from custom_item import CustomItem
 
 import sqlite3
 import json
 import sys
-
-class smartLabel(QLabel):
-	def __init__(self, screen):
-		super().__init__(screen)
-
-	def ownWordWrap(self, max_font_size=150):
-		def calculate_text_size(text, font):
-			"""Helper to calculate height and width of given text with a specific font."""
-			self.setFont(font)
-			metrics = self.fontMetrics()
-			height = metrics.boundingRect(text).height()
-			lines = len(text.split("\n"))
-			return height * lines
-
-		font_size = 2
-		ready_text = ""
-		while font_size <= max_font_size:
-			# Set font size
-			font = QFont("Arial", font_size)
-			font.setBold(True)
-			self.setFont(font)
-
-			# Recalculate wrapped text
-			words = self.text().split()
-			ready_text = ""
-			active_text = ""
-			for word in words:
-				current_width = self.fontMetrics().boundingRect(active_text + word + " ").width()
-				if current_width > self.size().width():
-					ready_text += active_text.strip() + "\n"
-					active_text = ""
-				active_text += word + " "
-			ready_text += active_text.strip()
-
-			# Check if text fits
-			current_height = calculate_text_size(ready_text, font)
-			if current_height > self.size().height():
-				font_size -= 2  # Step back to the previous valid font size
-				break
-
-			font_size += 2
-
-		# Apply final text and font
-		font.setPointSize(font_size)
-		self.setFont(font)
-		self.setText(ready_text.strip())
-
-
-class SongLine:
-	def __init__(self, text, wholePart, index_from):
-		self.text = text
-		self.index_from = index_from
-		self.wholePart = wholePart
-
-
-class WordsWindow(QMainWindow):
-	def __init__(self, screen_number):
-		super().__init__()
-		self.screen_number = screen_number
-		self.init_ui()
-
-	def init_ui(self):
-		with open("screens_settings.json", "r") as jsonfile:
-			settings = json.load(jsonfile)
-
-		# self.setWindowFlags(Qt.WindowStaysOnTopHint)
-
-		self.isShowing = False
-		screen = "screen_" + str(self.screen_number)
-		if settings[screen]["show_words"]:
-			if settings[screen]["stream_mode"]: background = "rgb(0, 255, 0)"
-			else: background = self.passive_background()
-			self.setObjectName("WordsWindow")
-			styles = """#WordsWindow {
-				background: %s;
-			}
-			""" % (background)
-			self.setStyleSheet(styles)
-
-			self.label = smartLabel(self)
-			if settings[screen]["stream_mode"]:
-				mode = "stream_mode_settings"
-			else:
-				mode = "simple_mode_settings"
-
-			font_size = settings[screen][mode]["font_size"]
-			text_color = settings[screen][mode]["text_color"]
-			font_size_info = settings[screen][mode]["font_size_info"]
-			text_color_info = settings[screen][mode]["text_color_info"]
-
-			f = QFont("Arial", font_size)
-			f.setBold(True)
-			self.label.setStyleSheet(f"color: {text_color}")
-			self.label.setFont(f)
-			self.label.setText("")
-			self.label.setTextFormat(QtCore.Qt.AutoText)
-			self.label.setAlignment(QtCore.Qt.AlignCenter)
-
-			self.label_info = QtWidgets.QLabel(self)
-			self.label_info.setGeometry(QtCore.QRect(10, 10, 400, 400))
-			f = QFont("Arial", font_size_info)
-			f.setItalic(True)
-			self.label_info.setFont(f)
-			self.label_info.setStyleSheet(f"color: {text_color_info}")
-
-			self.setShadow()
-
-			self.quitSc = QShortcut(QKeySequence('Esc'), self)
-			self.quitSc.activated.connect(LyricVerse.hide_text)
-
-			monitor = QDesktopWidget().screenGeometry(self.screen_number)
-			self.move(monitor.left(), monitor.top())
-
-			self.showFullScreen()
-			self.isShowing = True
-
-
-	def stream_mode(self):
-		with open("screens_settings.json", "r") as jsonfile:
-			settings = json.load(jsonfile)
-		screen = "screen_" + str(self.screen_number)
-		if settings[screen]["stream_mode"]: return True
-		else: return False
-
-
-	def passive_background(self):
-		with open("screens_settings.json", "r") as jsonfile:
-			settings = json.load(jsonfile)
-		screen = "screen_" + str(self.screen_number)
-		return settings[screen]["simple_mode_settings"]["passive_background"]
-
-
-	def setShadow(self):
-		with open("screens_settings.json", "r") as jsonfile:
-			settings = json.load(jsonfile)
-
-		screen = "screen_" + str(self.screen_number)
-		if settings[screen]["stream_mode"]:
-			mode = "stream_mode_settings"
-		else:
-			mode = "simple_mode_settings"
-
-		if settings[screen][mode]["shadow"]:
-			shadow = QGraphicsDropShadowEffect()
-			try:
-				shadow.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
-			except:
-				shadow.setBlurRadius(15)
-			try:
-				x = settings[screen][mode]["shadow_offset"]["x"]
-				y = settings[screen][mode]["shadow_offset"]["y"]
-				shadow.setOffset(x, y)
-			except:
-				pass
-			self.label.setGraphicsEffect(shadow)
-
-			shadow2 = QGraphicsDropShadowEffect()
-			try:
-				shadow2.setBlurRadius(settings[screen][mode]["shadow_blur_radius"])
-			except:
-				shadow2.setBlurRadius(15)
-			try:
-				x = settings[screen][mode]["shadow_offset"]["x"]
-				y = settings[screen][mode]["shadow_offset"]["y"]
-				shadow2.setOffset(x, y)
-			except:
-				pass
-			self.label_info.setGraphicsEffect(shadow2)
-		else:
-			shadow = QGraphicsDropShadowEffect()
-			shadow.setBlurRadius(0)
-			shadow.setOffset(0, 0)
-			self.label.setGraphicsEffect(shadow)
-			self.label_info.setGraphicsEffect(shadow)
-
-	
-	def closeEvent(self, event):
-		self.isShowing = False
-
-
-class CustomItem(QWidget):
-	def __init__(self, text, type_of_item):
-		super().__init__()
-
-		self.type_of_item = type_of_item
-		self.text = text
-
-		self.setObjectName("CustomItem")
-		self.textQVBoxLayout = QVBoxLayout()
-		self.textQVBoxLayout.setSpacing(7)
-		if type_of_item != "part":
-			self.textUp = QLabel()
-			self.textUp.setObjectName("textUp")
-		self.textDown = QLabel()
-		self.textDown.setObjectName("textDown")
-		if type_of_item != "part":
-			self.textQVBoxLayout.addWidget(self.textUp)
-		self.textQVBoxLayout.addWidget(self.textDown)
-
-		self.textDown.setText(self.text)
-
-		self.allQHBoxLayout = QHBoxLayout()
-		self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 0)
-
-		if type_of_item != "part":
-			if type_of_item == "couplet":
-				self.textUp.setText("Куплет")
-
-			elif type_of_item == "chour":
-				self.textUp.setText("Приспів")
-
-			elif type_of_item == "bridge":
-				self.textUp.setText("Брідж")
-
-
-
-		self.setStyleSheet("""
-			#textUp {
-				color: #044c87;
-			}
-			#textDown {
-				color: black;
-			}
-			""")
-
-		self.setLayout(self.allQHBoxLayout)
-	
-
-class SongItem(QListWidgetItem):
-	def __init__(self, text, type_of_item):
-		super().__init__()
-
-		self.type_of_item = type_of_item
-		self.text = text
-
-
-class AddSongWindow(QMainWindow):
-	def __init__(self, songbook):
-		super().__init__()
-		self.ui = Ui_addSongWindow()
-		self.ui.setupUi(self)
-		self.init_ui()
-		self.songbook = songbook
-
-	def init_ui(self):
-		self.ui.song_list.setSpacing(2)
-		self.ui.add_couplet_btn.clicked.connect(self.add_couplet)
-		self.ui.add_chour_btn.clicked.connect(self.add_chour)
-		self.ui.add_bridge_btn.clicked.connect(self.add_bridge)
-		self.ui.remove_item_btn.clicked.connect(self.remove_item)
-		self.ui.song_list.itemDoubleClicked.connect(self.edit_song_item)
-		self.ui.save_item_btn.clicked.connect(self.save_song_item)
-		self.ui.add_song_btn.clicked.connect(self.add_song)
-
-		self.ui.save_item_btn.setEnabled(False)
-
-		self.chour = ""
-		self.chour_item = None
-
-		self.couplets = []
-		self.bridges = []
-
-		self.ui.song_list.setStyleSheet("""
-			::item {
-				background-color: white;
-				border: 1px solid black;
-				border-radius: 10px;
-			}
-			::item:selected{
-				border: 2px solid #c5cc04;
-			}
-			""")
-
-
-	def edit_song_item(self):
-		self.ui.save_item_btn.setEnabled(True)
-		current_item = self.ui.song_list.currentItem()
-		self.ui.text_input.clear()
-		self.ui.text_input.appendPlainText(current_item.text)
-
-
-	def save_song_item(self):
-		self.ui.save_item_btn.setEnabled(False)
-		current_text = self.ui.text_input.toPlainText()
-		current_item = self.ui.song_list.currentItem()
-		current_item.text = current_text
-
-		if current_item.type_of_item == "couplet":
-			custom_item = CustomItem(current_text, "couplet")
-			current_item.setSizeHint(custom_item.sizeHint())
-			self.ui.song_list.setItemWidget(current_item, custom_item)
-		elif current_item.type_of_item == "chour":
-			for x in range(self.ui.song_list.count()):
-				x_item = self.ui.song_list.item(x)
-				if x_item.type_of_item == "chour":
-					custom_item = CustomItem(current_text, "chour")
-					x_item.setSizeHint(custom_item.sizeHint())
-					self.ui.song_list.setItemWidget(x_item, custom_item)
-					x_item.text = current_text
-		elif current_item.type_of_item == "bridge":
-			custom_item = CustomItem(current_text, "bridge")
-			current_item.setSizeHint(custom_item.sizeHint())
-			self.ui.song_list.setItemWidget(current_item, custom_item)
-
-		self.ui.text_input.clear()
-
-
-	def addCustomItem(self, text, type_of_item):
-		custom_item = CustomItem(text, type_of_item)
-		simple_item = SongItem(text, type_of_item)
-		if type_of_item != "bridge":
-			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-		simple_item.setSizeHint(custom_item.sizeHint())
-
-		self.ui.song_list.addItem(simple_item)
-		self.ui.song_list.setItemWidget(simple_item, custom_item)
-
-
-	def insertCustomItem(self, text, type_of_item, index):
-		custom_item = CustomItem(text, type_of_item)
-		simple_item = SongItem(text, type_of_item)
-		if type_of_item != "bridge":
-			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-		simple_item.setSizeHint(custom_item.sizeHint())
-
-		self.ui.song_list.insertItem(index, simple_item)
-		self.ui.song_list.setItemWidget(simple_item, custom_item)
-
-
-	def add_couplet(self):
-		couplet_text = self.ui.text_input.toPlainText().strip()
-		if couplet_text:
-			self.addCustomItem(couplet_text, "couplet")
-
-			self.ui.text_input.clear()
-			self.couplets.append(couplet_text)
-
-			if self.chour:
-				self.addCustomItem(self.chour, "chour")
-
-
-	def add_chour(self):
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
-
-		chour_text = self.ui.text_input.toPlainText().strip()
-		couplet_indeces = []
-		for x in range(self.ui.song_list.count()):
-			x_item = self.ui.song_list.item(x)
-			if x_item.type_of_item == "couplet": couplet_indeces.append(x)
-		if chour_text and not self.chour and couplet_indeces:
-			for i in range(len(couplet_indeces)-1, -1, -1): 
-				self.insertCustomItem(chour_text, "chour", couplet_indeces[i]+1)
-
-			self.ui.text_input.clear()
-			self.chour = chour_text
-		elif self.chour: 
-			msg.setText("Chour is already exists") 
-			msg.exec_()
-		else: 
-			msg.setText("Add one couplet please") 
-			msg.exec_()
-
-
-	def add_bridge(self):
-		bridge_text = self.ui.text_input.toPlainText().strip()
-		if bridge_text:
-			self.addCustomItem(bridge_text, "bridge")
-
-			self.ui.text_input.clear()
-			self.bridges.append(bridge_text)
-
-
-	def remove_item(self):
-		current_item_index = self.ui.song_list.currentRow()
-		if current_item_index != -1:
-			item = self.ui.song_list.item(current_item_index)
-			if item.type_of_item == "chour":
-				self.chour = ""
-				chour_indeces = []
-				for x in range(self.ui.song_list.count()):
-					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "chour": chour_indeces.append(x)
-				for i in range(len(chour_indeces)-1, -1, -1): self.ui.song_list.takeItem(chour_indeces[i])
-
-			elif item.type_of_item == "couplet":
-				self.ui.song_list.takeItem(current_item_index)
-				if self.chour: self.ui.song_list.takeItem(current_item_index)
-				if self.chour and self.ui.song_list.count() == 0: self.chour = ""
-			elif item.type_of_item == "bridge": self.ui.song_list.takeItem(current_item_index)
-
-
-	def add_song(self):
-		with open("Songbooks/songbooks.json", "r") as jsonfile:
-			songbooks = json.load(jsonfile)
-
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
-
-		filename = songbooks[self.songbook]["filename"]
-
-		song_title = self.ui.song_title.text()
-		is_song_text = self.ui.song_list.count()
-		if not song_title:
-			msg.setText("Song must to have title!")
-			msg.exec_()
-		elif not is_song_text:
-			msg.setText("Song must to have text!")
-			msg.exec_()
-		else:
-			couplets = []
-			chour = ""
-			bridges = []
-			for x in range(self.ui.song_list.count()):
-				x_item = self.ui.song_list.item(x)
-				if x_item.type_of_item == "couplet": couplets.append(x_item.text)
-				elif not chour and x_item.type_of_item == "chour": chour = x_item.text
-				elif x_item.type_of_item == "bridge": bridges.append({"text": x_item.text, "index": x})
-
-
-			song_text = {
-				"Couplets": couplets,
-				"Chour": chour,
-				"Bridges": bridges
-			}
-			song_text = json.dumps(song_text, indent=4)
-
-			connection = sqlite3.connect(f"Songbooks/{filename}")
-			cursor = connection.cursor()
-			cursor.execute(f"INSERT INTO Songs (title, song_text) VALUES ('{song_title}', '{song_text}')")
-			connection.commit()
-
-			self.close()
-
-
-class EditSongWindow(QMainWindow):
-	def __init__(self, songbook, song):
-		super().__init__()
-		self.ui = Ui_EditSongWindow()
-		self.ui.setupUi(self)
-		self.songbook = songbook
-		self.song = song
-		self.init_ui()
-
-
-	def init_ui(self):
-		self.ui.song_list.setSpacing(2)
-		self.ui.add_couplet_btn.clicked.connect(self.add_couplet)
-		self.ui.add_chour_btn.clicked.connect(self.add_chour)
-		self.ui.add_bridge_btn.clicked.connect(self.add_bridge)
-		self.ui.remove_item_btn.clicked.connect(self.remove_item)
-		self.ui.song_list.itemDoubleClicked.connect(self.edit_song_item)
-		self.ui.save_item_btn.clicked.connect(self.save_song_item)
-		self.ui.edit_song_btn.clicked.connect(self.edit_song)
-
-		self.ui.save_item_btn.setEnabled(False)
-
-		self.chour = ""
-
-		self.ui.song_list.setStyleSheet("""
-			::item {
-				background-color: white;
-				border: 1px solid black;
-				border-radius: 10px;
-			}
-			::item:selected{
-				border: 2px solid #c5cc04;
-			}
-			""")
-
-		
-		self.ui.song_title.setText(self.song.title)
-
-		song_text = json.loads(self.song.song_text)
-		song_couplets = song_text["Couplets"]
-		self.chour = song_text["Chour"]
-		song_bridges = song_text["Bridges"]
-
-		for couplet in song_couplets:
-			self.addCustomItem(couplet, "couplet")
-			if self.chour: self.addCustomItem(self.chour, "chour")
-
-		for bridge in song_bridges: self.insertCustomItem(bridge["text"], "bridge", bridge["index"])
-
-
-	def edit_song_item(self):
-		self.ui.save_item_btn.setEnabled(True)
-		current_item = self.ui.song_list.currentItem()
-		self.ui.text_input.clear()
-		self.ui.text_input.appendPlainText(current_item.text)
-
-
-	def save_song_item(self):
-		self.ui.save_item_btn.setEnabled(False)
-		current_text = self.ui.text_input.toPlainText()
-		current_item = self.ui.song_list.currentItem()
-		current_item.text = current_text
-
-		if current_item.type_of_item == "couplet":
-			custom_item = CustomItem(current_text, "couplet")
-			current_item.setSizeHint(custom_item.sizeHint())
-			self.ui.song_list.setItemWidget(current_item, custom_item)
-		elif current_item.type_of_item == "chour":
-			for x in range(self.ui.song_list.count()):
-				x_item = self.ui.song_list.item(x)
-				if x_item.type_of_item == "chour":
-					custom_item = CustomItem(current_text, "chour")
-					x_item.setSizeHint(custom_item.sizeHint())
-					self.ui.song_list.setItemWidget(x_item, custom_item)
-					x_item.text = current_text
-		elif current_item.type_of_item == "bridge":
-			custom_item = CustomItem(current_text, "bridge")
-			current_item.setSizeHint(custom_item.sizeHint())
-			self.ui.song_list.setItemWidget(current_item, custom_item)
-
-		self.ui.text_input.clear()
-
-
-	def addCustomItem(self, text, type_of_item):
-		custom_item = CustomItem(text, type_of_item)
-		simple_item = SongItem(text, type_of_item)
-		if type_of_item != "bridge":
-			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-		simple_item.setSizeHint(custom_item.sizeHint())
-
-		self.ui.song_list.addItem(simple_item)
-		self.ui.song_list.setItemWidget(simple_item, custom_item)
-
-
-	def insertCustomItem(self, text, type_of_item, index):
-		custom_item = CustomItem(text, type_of_item)
-		simple_item = SongItem(text, type_of_item)
-		if type_of_item != "bridge":
-			simple_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-		simple_item.setSizeHint(custom_item.sizeHint())
-
-		self.ui.song_list.insertItem(index, simple_item)
-		self.ui.song_list.setItemWidget(simple_item, custom_item)
-
-
-	def add_couplet(self):
-		couplet_text = self.ui.text_input.toPlainText().strip()
-		if couplet_text:
-			self.addCustomItem(couplet_text, "couplet")
-			self.ui.text_input.clear()
-
-			if self.chour: self.addCustomItem(self.chour, "chour")
-
-
-	def add_chour(self):
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
-
-		chour_text = self.ui.text_input.toPlainText().strip()
-		couplet_indeces = []
-		for x in range(self.ui.song_list.count()):
-			x_item = self.ui.song_list.item(x)
-			if x_item.type_of_item == "couplet": couplet_indeces.append(x)
-		if chour_text and not self.chour and couplet_indeces:
-			for i in range(len(couplet_indeces)-1, -1, -1):
-				custom_item = CustomItem(chour_text, "chour")
-				chour_item = SongItem(chour_text, "chour")
-				chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-				chour_item.setSizeHint(custom_item.sizeHint())
-
-				self.ui.song_list.insertItem(couplet_indeces[i]+1, chour_item)
-				self.ui.song_list.setItemWidget(chour_item, custom_item)
-
-			self.ui.text_input.clear()
-			self.chour = chour_text
-		elif self.chour: 
-			msg.setText("Chour is already exists") 
-			msg.exec_()
-		else: 
-			msg.setText("Add one couplet please") 
-			msg.exec_()
-
-
-	def add_bridge(self):
-		bridge_text = self.ui.text_input.toPlainText().strip()
-		if bridge_text:
-			self.addCustomItem(bridge_text, "bridge")
-
-			self.ui.text_input.clear()
-
-
-	def remove_item(self):
-		current_item_index = self.ui.song_list.currentRow()
-		if current_item_index != -1:
-			item = self.ui.song_list.item(current_item_index)
-			if item.type_of_item == "chour":
-				self.chour = ""
-				chour_indeces = []
-				for x in range(self.ui.song_list.count()):
-					x_item = self.ui.song_list.item(x)
-					if x_item.type_of_item == "chour": chour_indeces.append(x)
-				for i in range(len(chour_indeces)-1, -1, -1): self.ui.song_list.takeItem(chour_indeces[i])
-
-			elif item.type_of_item == "couplet":
-				self.ui.song_list.takeItem(current_item_index)
-				if self.chour: self.ui.song_list.takeItem(current_item_index)
-				if self.chour and self.ui.song_list.count() == 0: self.chour = ""
-			elif item.type_of_item == "bridge": self.ui.song_list.takeItem(current_item_index)
-
-
-	def edit_song(self):
-		with open("Songbooks/songbooks.json", "r") as jsonfile:
-			songbooks = json.load(jsonfile)
-
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle("Error")
-
-		filename = songbooks[self.songbook]["filename"]
-
-		song_title = self.ui.song_title.text().strip()
-		is_song_text = self.ui.song_list.count()
-		if not song_title:
-			msg.setText("Song must to have title!")
-			msg.exec_()
-		elif not is_song_text:
-			msg.setText("Song must to have text!")
-			msg.exec_()
-		else:
-			couplets = []
-			chour = ""
-			bridges = []
-			for x in range(self.ui.song_list.count()):
-				x_item = self.ui.song_list.item(x)
-				if x_item.type_of_item == "couplet": couplets.append(x_item.text)
-				elif not chour and x_item.type_of_item == "chour": chour = x_item.text
-				elif x_item.type_of_item == "bridge": bridges.append({"text": x_item.text, "index": x})
-
-
-			song_text = {
-				"Couplets": couplets,
-				"Chour": chour,
-				"Bridges": bridges
-			}
-			song_text = json.dumps(song_text, indent=4)
-
-			connection = sqlite3.connect(f"Songbooks/{filename}")
-			cursor = connection.cursor()
-			cursor.execute(f"UPDATE Songs SET title=?, song_text=? WHERE id={self.song.number}", (song_title, song_text))
-			connection.commit()
-
-			self.close()
 
 
 class LyricVerse(QMainWindow):
@@ -681,18 +30,18 @@ class LyricVerse(QMainWindow):
 	def init_ui(self):
 		self.anyStreamMode = self.check_stream_mode()
 		self.setFixedSize(810, 580)
-		self.ui.song_search.textChanged.connect(self.searchSong)
-		self.ui.list_songs.itemPressed.connect(self.getWords)
-		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
-		self.ui.list_words.itemPressed.connect(self.showSong)
-		self.ui.bible_verses_list.itemPressed.connect(self.showBible)
+		self.ui.song_search.textChanged.connect(self.search_song)
+		self.ui.list_songs.itemPressed.connect(self.get_words)
+		self.ui.list_words.itemSelectionChanged.connect(self.show_song)
+		self.ui.list_words.itemPressed.connect(self.show_song)
+		self.ui.bible_verses_list.itemPressed.connect(self.show_bible)
 		self.quitSc = QShortcut(QKeySequence('Esc'), self)
 		self.quitSc.activated.connect(self.hide_text)
 		self.ui.screensCB.currentTextChanged.connect(self.set_values)
 		self.ui.btn_save.clicked.connect(self.set_settings)
 		self.ui.av_songbooks.currentTextChanged.connect(self.get_songs_from_songbook)
 		self.ui.av_translations.currentTextChanged.connect(self.set_bible)
-		self.ui.bible_books_list.itemSelectionChanged.connect(self.get_chapters)
+		self.ui.bible_books_list.itemSelectionChanged.connect(self.set_chapters)
 		self.ui.bible_chapters_list.itemSelectionChanged.connect(self.get_verses)
 		self.ui.bible_verses_list.setWordWrap(True)
 		self.ui.book_input.textChanged.connect(self.search_book)
@@ -747,20 +96,14 @@ class LyricVerse(QMainWindow):
 		self.set_settings()
 		self.open_window()
 
-		self.constructor_frame = ConstructorFrame(self.ui.simple_mode_settings_tab)
-
-		self.constructor_frame.label.setText("Hello world!\n abla bla blasdfjdasoifj")
-		self.constructor_frame.label.setAlignment(QtCore.Qt.AlignCenter)
-		# self.constructor_frame.label.moveToCenter()
-
 
 	def keyPressEvent(self, event):
-		if event.key() == QtCore.Qt.Key_Return:
+		if event.key() == Qt.Key_Return:
 			if self.ui.tabs.currentIndex() == 1 and self.ui.quick_bible_search.text().strip() or self.ui.bible_search.text().strip():
-				try: self.showBible()
+				try: self.show_bible()
 				except: pass
 			elif self.ui.tabs.currentIndex() == 0:
-				try: self.showSong()
+				try: self.show_song()
 				except: pass
 
 
@@ -807,8 +150,8 @@ class LyricVerse(QMainWindow):
 		if self.song != None:
 			self.editsong = EditSongWindow(self.ui.av_songbooks.currentText(), self.song)
 			self.editsong.show()
-
 			self.editsong.closeEvent = self.updateSongList
+
 		else:
 			msg = QMessageBox()
 			msg.setIcon(QMessageBox.Warning)
@@ -821,20 +164,21 @@ class LyricVerse(QMainWindow):
 		self.get_songs_from_songbook()
 		if self.song:
 			self.ui.list_songs.setCurrentRow(self.song.number - 1)
-		self.searchSong()
+		self.search_song()
 
 
 	def set_bible(self):
-		self.bible = Mybible("Bible_translations/%s" % (self.bible_translations[self.ui.av_translations.currentText()]["filename"]))
-		self.ui.bible_books_list.clear()
 		try:
+			self.bible = Mybible("Bible_translations/%s" % (self.bible_translations[self.ui.av_translations.currentText()]["filename"]))
+			self.ui.bible_books_list.clear()
+
 			for book in self.bible.all_books:
 				self.ui.bible_books_list.addItem(book.long_name)
-		except:
-			pass
+		except Exception as e:
+			print(e)
 
 
-	def get_chapters(self):
+	def set_chapters(self):
 		book_name = self.ui.bible_books_list.currentItem().text()
 		self.bible_place[0] = book_name
 		book_number = self.bible.book_to_number(book_name)
@@ -843,11 +187,12 @@ class LyricVerse(QMainWindow):
 		self.ui.bible_chapters_list.clear()
 		for i in range(1, count_of_chapters + 1):
 			self.ui.bible_chapters_list.addItem(str(i))
+		
 		self.ui.bible_chapters_list.setCurrentRow(0)
 
 
 	def get_verses(self):
-		try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+		try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.show_bible)
 		except: pass
 
 		book_number = int(self.bible.book_to_number(self.ui.bible_books_list.currentItem().text()))
@@ -860,11 +205,11 @@ class LyricVerse(QMainWindow):
 			for v in chapter_verses:
 				self.ui.bible_verses_list.addItem(str(counter) + ". " + v.text)
 				counter += 1
-		except:
-			pass
+		except Exception as e:
+			print(e)
 
 		self.ui.bible_verses_list.setCurrentRow(0)
-		self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
+		self.ui.bible_verses_list.itemSelectionChanged.connect(self.show_bible)
 
 
 	def search_book(self):
@@ -886,7 +231,7 @@ class LyricVerse(QMainWindow):
 
 
 	def search_verse(self):
-		try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+		try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.show_bible)
 		except: pass
 
 		request = self.ui.verse_input.text()
@@ -895,7 +240,7 @@ class LyricVerse(QMainWindow):
 			self.ui.bible_verses_list.setCurrentRow(verse - 1)
 		except Exception as error:
 			pass
-		self.ui.bible_verses_list.itemSelectionChanged.connect(self.showBible)
+		self.ui.bible_verses_list.itemSelectionChanged.connect(self.show_bible)
 
 
 	def quick_search(self):
@@ -929,7 +274,7 @@ class LyricVerse(QMainWindow):
 
 			self.ui.bible_chapters_list.setCurrentRow(int(search_res.chapter) - 1)
 
-			try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.showBible)
+			try: self.ui.bible_verses_list.itemSelectionChanged.disconnect(self.show_bible)
 			except: pass
 			self.ui.bible_verses_list.setCurrentRow(int(search_res.verse) - 1)
 		except Exception as error:
@@ -937,10 +282,10 @@ class LyricVerse(QMainWindow):
 
 
 	def get_songs_from_songbook(self):
-		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.getWords)
+		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.get_words)
 		except: pass
 
-		try: self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+		try: self.ui.list_words.itemSelectionChanged.disconnect(self.show_song)
 		except: pass
 
 		if self.ui.av_songbooks.currentText():
@@ -954,11 +299,11 @@ class LyricVerse(QMainWindow):
 			for i in song_names:
 				self.ui.list_songs.addItem(str(i[0]) + " " + i[1])
 
-			self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
-			self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+			self.ui.list_songs.itemSelectionChanged.connect(self.get_words)
+			self.ui.list_words.itemSelectionChanged.connect(self.show_song)
 
 
-	def getSong(self, song_number):
+	def get_song(self, song_number):
 		filename = self.songbooks[self.ui.av_songbooks.currentText()]["filename"]
 		db = sqlite3.connect(f"Songbooks/{filename}")
 		sql = db.cursor()
@@ -970,17 +315,17 @@ class LyricVerse(QMainWindow):
 		return Song(number, title, song_text)
 
 
-	def getWords(self):
-		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.getWords)
+	def get_words(self):
+		try: self.ui.list_songs.itemSelectionChanged.disconnect(self.get_words)
 		except: pass
-		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+		self.ui.list_words.itemSelectionChanged.disconnect(self.show_song)
 
 		song_number = int(self.ui.list_songs.currentItem().text().split()[0])
 
-		self.song = self.getSong(song_number)
+		self.song = self.get_song(song_number)
 		song_text = json.loads(self.song.song_text)
 		song_couplets = song_text["Couplets"]
-		song_chour = song_text["Chour"]
+		song_chorus = song_text["Chorus"]
 		song_bridges = song_text["Bridges"]
 
 		self.ui.list_words.clear()
@@ -989,7 +334,7 @@ class LyricVerse(QMainWindow):
 			song_parts = []
 			for couplet in song_couplets:
 				song_parts.append(couplet)
-				if song_chour: song_parts.append(song_chour)
+				if song_chorus: song_parts.append(song_chorus)
 			for b in song_bridges: song_parts.insert(b["index"], b["text"])
 				
 			self.song_lines = []
@@ -1000,7 +345,7 @@ class LyricVerse(QMainWindow):
 			for line in self.song_lines:
 				line_custom_item = CustomItem(line.text, "part")
 				line_item = SongItem(line.text, "part")
-				line_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+				line_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
 				line_item.setSizeHint(line_custom_item.sizeHint())
 
 				self.ui.list_words.addItem(line_item)
@@ -1010,24 +355,24 @@ class LyricVerse(QMainWindow):
 			for i in song_couplets:
 				couplet_custom_item = CustomItem(i, "couplet")
 				couplet_item = SongItem(i, "couplet")
-				couplet_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+				couplet_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
 				couplet_item.setSizeHint(couplet_custom_item.sizeHint())
 
 				self.ui.list_words.addItem(couplet_item)
 				self.ui.list_words.setItemWidget(couplet_item, couplet_custom_item)
-				if song_chour != "":
-					chour_custom_item = CustomItem(song_chour, "chour")
-					chour_item = SongItem(song_chour, "chour")
-					chour_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
-					chour_item.setSizeHint(chour_custom_item.sizeHint())
+				if song_chorus != "":
+					chorus_custom_item = CustomItem(song_chorus, "chorus")
+					chorus_item = SongItem(song_chorus, "chorus")
+					chorus_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
+					chorus_item.setSizeHint(chorus_custom_item.sizeHint())
 
-					self.ui.list_words.addItem(chour_item)
-					self.ui.list_words.setItemWidget(chour_item, chour_custom_item)
+					self.ui.list_words.addItem(chorus_item)
+					self.ui.list_words.setItemWidget(chorus_item, chorus_custom_item)
 			if song_bridges:
 				for b in song_bridges:
 					bridge_custom_item = CustomItem(b["text"], "bridge")
 					bridge_item = SongItem(b["text"], "bridge")
-					bridge_item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled)
+					bridge_item.setFlags(Qt.ItemIsSelectable|Qt.ItemIsUserCheckable|Qt.ItemIsEnabled)
 					bridge_item.setSizeHint(bridge_custom_item.sizeHint())
 
 					self.ui.list_words.insertItem(b["index"], bridge_item)
@@ -1035,11 +380,11 @@ class LyricVerse(QMainWindow):
 
 		self.ui.list_words.setCurrentRow(0)
 
-		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
-		self.ui.list_songs.itemSelectionChanged.connect(self.getWords)
+		self.ui.list_words.itemSelectionChanged.connect(self.show_song)
+		self.ui.list_songs.itemSelectionChanged.connect(self.get_words)
 
 
-	def searchSong(self):
+	def search_song(self):
 		def checkIn(text1, text2):
 			def makeUniversalText(text):
 				text = text.lower()
@@ -1071,7 +416,7 @@ class LyricVerse(QMainWindow):
 				song_text = ""
 				for c in song_text_json["Couplets"]:
 					song_text += c + "\n\n"
-				song_text += song_text_json["Chour"]
+				song_text += song_text_json["chorus"]
 				if checkIn(song_text, req):
 					res.append(s)
 
@@ -1095,7 +440,7 @@ class LyricVerse(QMainWindow):
 		self.close_window()
 
 
-	def showSong(self):
+	def show_song(self):
 		try:
 			self.screens[1]
 		except:
@@ -1104,7 +449,7 @@ class LyricVerse(QMainWindow):
 		self.lastShown = "song"
 
 		song_number = int(self.ui.list_songs.currentItem().text().split()[0])
-		self.last_shown_song = self.getSong(song_number)
+		self.last_shown_song = self.get_song(song_number)
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -1150,13 +495,13 @@ class LyricVerse(QMainWindow):
 					part = self.ui.list_words.currentItem().text
 				self.screens[s].label.setText(part)
 
-				background = settings[screen]["simple_mode_settings"]["background"]
+				background = settings[screen]["default_mode_settings"]["background"]
 				self.screens[s].setStyleSheet("#WordsWindow { background: %s; }" % (background))
 
-				font_size = settings[screen]["simple_mode_settings"]["font_size"]
+				font_size = settings[screen]["default_mode_settings"]["font_size"]
 
-				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["song_margins"]["h"]
-				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["song_margins"]["v"]
+				label_width = screen_size.width() - settings[screen]["default_mode_settings"]["song_margins"]["h"]
+				label_height = screen_size.height() - settings[screen]["default_mode_settings"]["song_margins"]["v"]
 
 				# Set label to center
 				label_center_x = label_width / 2
@@ -1174,7 +519,7 @@ class LyricVerse(QMainWindow):
 				self.screens[s].label.ownWordWrap(font_size)
 
 
-	def showBible(self):
+	def show_bible(self):
 		try:
 			self.screens[1]
 		except:
@@ -1236,16 +581,16 @@ class LyricVerse(QMainWindow):
 			elif settings[screen]["show_words"] and not settings[screen]["stream_mode"]:
 				self.screens[s].label.setText(self.ui.bible_verses_list.currentItem().text())
 
-				background = settings[screen]["simple_mode_settings"]["background"]
+				background = settings[screen]["default_mode_settings"]["background"]
 				self.screens[s].setStyleSheet("#WordsWindow { background: %s; }" % (background))
 
-				font_size = settings[screen]["simple_mode_settings"]["font_size"]
+				font_size = settings[screen]["default_mode_settings"]["font_size"]
 				f = QFont("Arial", font_size)
 				f.setBold(True)
 				self.screens[s].label.setFont(f)
 
-				label_width = screen_size.width() - settings[screen]["simple_mode_settings"]["bible_margins"]["h"]
-				label_height = screen_size.height() - settings[screen]["simple_mode_settings"]["bible_margins"]["v"]
+				label_width = screen_size.width() - settings[screen]["default_mode_settings"]["bible_margins"]["h"]
+				label_height = screen_size.height() - settings[screen]["default_mode_settings"]["bible_margins"]["v"]
 
 				# Set label to center
 				label_center_x = label_width / 2
@@ -1265,9 +610,9 @@ class LyricVerse(QMainWindow):
 				bible_place = self.list_to_bible_place(self.bible_place)
 				self.screens[s].label_info.setText(bible_place)
 
-				info_position = settings[screen]["simple_mode_settings"]["info_position"]
+				info_position = settings[screen]["default_mode_settings"]["info_position"]
 				self.screens[s].label_info.move(info_position["x"], info_position["y"])
-				font_size = settings[screen]["simple_mode_settings"]["font_size_info"]
+				font_size = settings[screen]["default_mode_settings"]["font_size_info"]
 				f = QFont("Arial", font_size)
 				f.setItalic(True)
 				self.screens[s].label_info.setFont(f)
@@ -1289,18 +634,13 @@ class LyricVerse(QMainWindow):
 	def open_window(self):
 		self.screens = []
 
-		# self.ui.screensCB.clear()
 		count_of_screens = QDesktopWidget().screenCount()
 		for i in range(count_of_screens):
 			self.screens.append(WordsWindow(i))
-			# self.ui.screensCB.addItem(str(i))
 
 
 	def close_window(self, number=None):
 		if not number:
-			# try: self.screens[1]
-			# except: return
-
 			for s in self.screens:
 				try: s.close()
 				except: pass
@@ -1349,14 +689,14 @@ class LyricVerse(QMainWindow):
 			self.ui.settings_mode_tabs.setCurrentIndex(0)
 
 		self.ui.checkbox_show_words.setChecked(settings[screen]["show_words"])
-		self.ui.font_size_input.setValue(settings[screen]["simple_mode_settings"]["font_size"])
-		self.ui.text_color_input.setText(settings[screen]["simple_mode_settings"]["text_color"])
-		self.ui.background_color_input.setText(settings[screen]["simple_mode_settings"]["background"])
-		self.ui.passive_background_color_input.setText(settings[screen]["simple_mode_settings"]["passive_background"])
-		self.ui.shadow_checkbox.setChecked(settings[screen]["simple_mode_settings"]["shadow"])
-		self.ui.shadow_blur_radius_input.setValue(settings[screen]["simple_mode_settings"]["shadow_blur_radius"])
-		self.ui.shadow_offset_x_input.setValue(settings[screen]["simple_mode_settings"]["shadow_offset"]["x"])
-		self.ui.shadow_offset_y_input.setValue(settings[screen]["simple_mode_settings"]["shadow_offset"]["y"])
+		self.ui.font_size_input.setValue(settings[screen]["default_mode_settings"]["font_size"])
+		self.ui.text_color_input.setText(settings[screen]["default_mode_settings"]["text_color"])
+		self.ui.background_color_input.setText(settings[screen]["default_mode_settings"]["background"])
+		self.ui.passive_background_color_input.setText(settings[screen]["default_mode_settings"]["passive_background"])
+		self.ui.shadow_checkbox.setChecked(settings[screen]["default_mode_settings"]["shadow"])
+		self.ui.shadow_blur_radius_input.setValue(settings[screen]["default_mode_settings"]["shadow_blur_radius"])
+		self.ui.shadow_offset_x_input.setValue(settings[screen]["default_mode_settings"]["shadow_offset"]["x"])
+		self.ui.shadow_offset_y_input.setValue(settings[screen]["default_mode_settings"]["shadow_offset"]["y"])
 
 		self.ui.checkbox_stream_mode.setChecked(settings[screen]["stream_mode"])
 		self.ui.font_size_input_stream.setValue(settings[screen]["stream_mode_settings"]["font_size"])
@@ -1399,14 +739,14 @@ class LyricVerse(QMainWindow):
 			return
 
 		settings[screen]["show_words"] = show_words
-		settings[screen]["simple_mode_settings"]["text_color"] = text_color
-		settings[screen]["simple_mode_settings"]["background"] = background
-		settings[screen]["simple_mode_settings"]["passive_background"] = passive_background
-		settings[screen]["simple_mode_settings"]["font_size"] = font_size
-		settings[screen]["simple_mode_settings"]["shadow"] = shadow
-		settings[screen]["simple_mode_settings"]["shadow_blur_radius"] = shadow_blur_radius
-		settings[screen]["simple_mode_settings"]["shadow_offset"]["x"] = shadow_offset_x
-		settings[screen]["simple_mode_settings"]["shadow_offset"]["y"] = shadow_offset_y
+		settings[screen]["default_mode_settings"]["text_color"] = text_color
+		settings[screen]["default_mode_settings"]["background"] = background
+		settings[screen]["default_mode_settings"]["passive_background"] = passive_background
+		settings[screen]["default_mode_settings"]["font_size"] = font_size
+		settings[screen]["default_mode_settings"]["shadow"] = shadow
+		settings[screen]["default_mode_settings"]["shadow_blur_radius"] = shadow_blur_radius
+		settings[screen]["default_mode_settings"]["shadow_offset"]["x"] = shadow_offset_x
+		settings[screen]["default_mode_settings"]["shadow_offset"]["y"] = shadow_offset_y
 
 		if settings[screen]["stream_mode"] != stream_mode: self.streamModeChanged = True
 		else: self.streamModeChanged = False
@@ -1427,16 +767,16 @@ class LyricVerse(QMainWindow):
 		self.anyStreamMode = self.check_stream_mode()
 		if not self.streamModeChanged:
 			if self.lastShown == "song":
-				self.showSong()
+				self.show_song()
 			elif self.lastShown == "bible":
-				self.showBible()
+				self.show_bible()
 		elif self.streamModeChanged:
 			self.hide_text()
-			if self.lastShown: self.getWords()
+			if self.lastShown: self.get_words()
 		
-		self.applySettingsForScreens()
+		self.apply_settings_for_screens()
 
-		self.ui.list_words.itemSelectionChanged.disconnect(self.showSong)
+		self.ui.list_words.itemSelectionChanged.disconnect(self.show_song)
 
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
@@ -1446,10 +786,10 @@ class LyricVerse(QMainWindow):
 		else:
 			self.ui.settings_mode_tabs.setCurrentIndex(0)
 
-		self.ui.list_words.itemSelectionChanged.connect(self.showSong)
+		self.ui.list_words.itemSelectionChanged.connect(self.show_song)
 
 
-	def applySettingsForScreens(self):
+	def apply_settings_for_screens(self):
 		with open("screens_settings.json", "r") as jsonfile:
 			settings = json.load(jsonfile)
 
@@ -1474,24 +814,24 @@ class LyricVerse(QMainWindow):
 				if settings[screen]["stream_mode_settings"]["shadow"]: self.screens[i].setShadow()
 			
 			elif not settings[screen]["stream_mode"] and settings[screen]["show_words"]:
-				text_color = settings[screen]["simple_mode_settings"]["text_color"]
+				text_color = settings[screen]["default_mode_settings"]["text_color"]
 				if self.lastShown:
-					background = settings[screen]["simple_mode_settings"]["background"]
+					background = settings[screen]["default_mode_settings"]["background"]
 					styles = "#WordsWindow { background: %s; }" % (background)
 					self.screens[i].setStyleSheet(styles)
 				else:
-					passive_background = settings[screen]["simple_mode_settings"]["passive_background"]
+					passive_background = settings[screen]["default_mode_settings"]["passive_background"]
 					styles = "#WordsWindow { background: %s; }" % (passive_background)
 					self.screens[i].setStyleSheet(styles)
 				
 				self.screens[i].label.setStyleSheet(f"color: {text_color};")
 
-				if settings[screen]["simple_mode_settings"]["shadow"]: self.screens[i].setShadow()
+				if settings[screen]["default_mode_settings"]["shadow"]: self.screens[i].setShadow()
 
 
 
 if __name__ == "__main__":
-	app = QtWidgets.QApplication([])
+	app = QApplication([])
 	application = LyricVerse()
 	application.show()
 

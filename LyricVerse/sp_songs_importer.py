@@ -1,7 +1,7 @@
 import sqlite3
 import json
 
-from Song import Song
+from song import Song
 
 
 # Function for adding or changing records in json songbooks
