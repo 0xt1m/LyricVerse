@@ -1,4 +1,4 @@
-import sqlite3, json
+import sqlite3, json, shutil
 
 from song import Song
 
@@ -40,11 +40,12 @@ class AddSongbookWindow(QMainWindow):
 
 		file_name = QFileDialog.getOpenFileName(self, 'Open file', './')
 		file = QFileInfo(file_name[0])
-		if file.suffix() == "sps":
+		if file.suffix() == "db":
+			self.selected_file_path = file.absoluteFilePath()
 			self.file.setText(file.fileName())
 			self.file.setFont(font)
 		else:
-			msg.setText("Неможливо розпізнати формати файлу")	
+			msg.setText("Неможливо розпізнати формат файлу")	
 			msg.exec_()
 
 
@@ -68,10 +69,17 @@ class AddSongbookWindow(QMainWindow):
 			cursor.execute('CREATE TABLE Songs (id INTEGER NOT NULL, title TEXT NOT NULL, song_text TEXT NOT NULL, PRIMARY KEY("id" AUTOINCREMENT));')
 
 			connection.commit()
-			addSongbookToJson(filename, self.songbook_title_input.text().strip())
+			add_songbook_to_json(filename, self.songbook_title_input.text().strip())
 			self.close()
 		else:
-			importSongsFromSP(self.file.text(), self.songbook_title_input.text().strip())
+			filename = self.file.text()
+			songbook_name = self.songbook_title_input.text().strip()
+
+			print(self.selected_file_path)
+
+			shutil.copy(self.selected_file_path, f"./Songbooks/{filename}")
+			add_songbook_to_json(filename, songbook_name)
+
 			self.close()
 
 
@@ -131,7 +139,7 @@ class FileLabel(QLabel):
 			event.ignore()
 
 
-def addSongbookToJson(filename, title="Songbook"):
+def add_songbook_to_json(filename, title="Songbook"):
 	title = title.replace(".db", "")
 	with open("Songbooks/songbooks.json", "r") as jsonfile:
 		songbooks = json.load(jsonfile)
@@ -184,4 +192,4 @@ def importSongsFromSP(filename, title):
 		cursor.execute('INSERT INTO Songs (id, title, song_text) VALUES (?, ?, ?);', (song.number, song.title, song.song_text))
 
 	connection.commit()
-	addSongbookToJson(filename.replace("sps", "db"), title)
+	add_songbook_to_json(filename.replace("sps", "db"), title)
